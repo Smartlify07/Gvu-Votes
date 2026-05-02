@@ -125,7 +125,7 @@ export function RegisterForm() {
         position: data.position,
       },
       {
-        onSuccess: (data, variables) => {
+        onSuccess: () => {
           toast.success("Registration successful!")
           navigate({ to: "/" })
         },
