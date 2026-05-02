@@ -4,7 +4,6 @@ export type ContestantPayload = {
   name: string
   matriculationNumber: string
   email: string
-  thumbnail: string
   department: string
   position: string
 }

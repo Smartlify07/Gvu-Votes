@@ -79,7 +79,7 @@ const positions = [
 
 export function RegisterForm() {
   const navigate = useNavigate()
-  const { mutate, isPending } = useContestantMutation()
+  const { mutateAsync, isPending } = useContestantMutation()
 
   const {
     handleSubmit,
@@ -116,17 +116,16 @@ export function RegisterForm() {
       thumbnailUrl = data.thumbnail
     }
 
-    mutate(
+    await mutateAsync(
       {
         name: data.name,
         matriculationNumber: data.matriculationNumber,
         email: data.email,
-        thumbnail: thumbnailUrl,
         department: data.department,
         position: data.position,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data, variables) => {
           toast.success("Registration successful!")
           navigate({ to: "/" })
         },
