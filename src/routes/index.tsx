@@ -7,7 +7,7 @@ export const Route = createFileRoute("/")({ component: App })
 
 function App() {
   return (
-    <div className="flex min-h-svh items-center p-6 lg:p-12">
+    <div className="flex min-h-svh p-6 lg:p-12">
       <section className="flex w-full flex-col gap-6">
         <div className="flex flex-col gap-1 lg:flex-row lg:items-start lg:items-center justify-between">
 

@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase"
-import type { PostgrestSingleResponse } from "@supabase/supabase-js"
 
 export type ContestantPayload = {
   name: string
@@ -25,15 +24,6 @@ export type ContestantWithVotes = {
   votes: { count: number }[]
 }
 
-
-type Contestant = {
-  name: string
-  matriculationNumber: string
-  email: string
-  department: string
-  position: string
-  avatarUrl: string
-}
 export async function getContestants() {
   try {
     const result = await supabase
@@ -49,7 +39,12 @@ export async function getContestants() {
 
 export async function addContestant(values: ContestantPayload) {
   try {
-    await supabase.from("contestants").insert(values)
+    const { data, error } = await supabase.from("contestants").insert(values)
+    if (error) {
+      console.error(error)
+      throw error
+    }
+    return data
   } catch (error) {
     console.error(error)
     throw error
