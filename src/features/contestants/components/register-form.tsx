@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/field"
 import { toast } from "sonner"
 import { useNavigate } from "@tanstack/react-router"
-import { CheckCircle2, Loader2, Upload, User, Users, ImageIcon } from "lucide-react"
+import { CheckCircle2, Loader2, Upload, User, Award, ImageIcon } from "lucide-react"
 import { useContestantMutation } from "../hooks"
 import { supabase } from "@/lib/supabase"
 import { Spinner } from "@/components/ui/spinner"
@@ -339,7 +339,7 @@ export function RegisterForm() {
       {/* Contestant Details Section */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-2 text-lg font-medium">
-          <Users className="h-5 w-5" />
+          <Award className="h-5 w-5" />
           <h2>Contestant Details</h2>
         </div>
         <FieldGroup>
@@ -434,12 +434,12 @@ export function RegisterForm() {
               />
               <div
                 className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-input bg-background hover:bg-accent/50 transition-colors"
-                style={{ width: "400px", height: "300px" }}
+                style={{ width: "100%", height: "300px" }}
               >
                 {isUploading ? (
                   <>
                     <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Uploading...</p></>
+                    <p className="text-sm text-muted-foreground">Uploading...</p> </>
                 ) : uploadedUrl ? (
                   <>
                     <CheckCircle2 className="h-10 w-10 text-green-600" />
@@ -467,6 +467,7 @@ export function RegisterForm() {
                 <FieldError errors={[fieldState.error]} />
               )}
             </div>
+
           )}
         />
       </section>
