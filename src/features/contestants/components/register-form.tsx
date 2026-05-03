@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -22,10 +22,12 @@ import {
 } from "@/components/ui/field"
 import { toast } from "sonner"
 import { useNavigate } from "@tanstack/react-router"
+import { CheckCircle2, Loader2 } from "lucide-react"
 import { useContestantMutation } from "../hooks"
 import { supabase } from "@/lib/supabase"
 
 const MAX_FILE_SIZE = 10000000 // 10MB
+const DEBOUNCE_DELAY = 500
 
 const formSchema = z.object({
   name: z
@@ -83,27 +85,76 @@ const positions = [
 export function RegisterForm() {
   const navigate = useNavigate()
   const { mutateAsync, isPending } = useContestantMutation()
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [fileValue, setFileValue] = useState<File | null>(null)
+  const cleanupRef = useRef<(() => void) | null>(null)
 
   const {
     handleSubmit,
     formState: { errors },
     control,
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema) as any,
   })
 
-  const isLoading = isUploading || isPending
+  useEffect(() => {
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current()
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!fileValue) {
+      setUploadedUrl(null)
+      setUploadError(null)
+      return
+    }
+
+    setUploadError(null)
+    setIsUploading(true)
+
+    const timer = setTimeout(async () => {
+      const fileExt = fileValue.name.split(".").pop()
+      const fileName = `${Date.now()}.${fileExt}`
+
+      const { error } = await supabase.storage
+        .from("contestants")
+        .upload(fileName, fileValue)
+
+      if (error) {
+        setUploadError(error.message)
+        setIsUploading(false)
+        return
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("contestants")
+        .getPublicUrl(fileName)
+
+      setUploadedUrl(publicUrlData.publicUrl)
+      setIsUploading(false)
+    }, DEBOUNCE_DELAY)
+
+    cleanupRef.current = () => clearTimeout(timer)
+
+    return () => {
+      cleanupRef.current?.()
+    }
+  }, [fileValue])
 
   const onSubmit = async (data: FormData) => {
-    let thumbnailUrl = ""
+    let thumbnailUrl = uploadedUrl || (data.thumbnail instanceof File ? "" : data.thumbnail || "")
 
-    if (data.thumbnail instanceof File) {
+    if (data.thumbnail instanceof File && !uploadedUrl) {
+      setIsUploading(true)
       const file = data.thumbnail
       const fileExt = file.name.split(".").pop()
       const fileName = `${Date.now()}.${fileExt}`
-
-      setIsUploading(true)
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("contestants")
@@ -112,7 +163,6 @@ export function RegisterForm() {
       setIsUploading(false)
 
       if (uploadError) {
-        console.error(uploadError)
         toast.error("Failed to upload image")
         return
       }
@@ -122,8 +172,6 @@ export function RegisterForm() {
         .getPublicUrl(uploadData.path)
 
       thumbnailUrl = publicUrlData.publicUrl
-    } else if (typeof data.thumbnail === "string") {
-      thumbnailUrl = data.thumbnail
     }
 
     try {
@@ -134,11 +182,10 @@ export function RegisterForm() {
           email: data.email,
           department: data.department,
           position: data.position,
-          avatarUrl: thumbnailUrl as string,
+          avatarUrl: thumbnailUrl,
         },
         {
           onError: (error: any) => {
-            console.error(error)
             if (
               error?.code === "23505" ||
               error?.message?.includes("duplicate key") ||
@@ -153,12 +200,10 @@ export function RegisterForm() {
             toast.success("Registration successful!")
             navigate({ to: "/" })
           },
-
         }
       )
     } catch {
       // Error already handled in onError
-      // console.error(error)
     }
   }
 
@@ -178,6 +223,7 @@ export function RegisterForm() {
                     id="name"
                     placeholder="Enter your name"
                     aria-invalid={fieldState.invalid}
+                    className="text-sm"
                   />
 
                   {fieldState.invalid && (
@@ -200,6 +246,7 @@ export function RegisterForm() {
                     id="matric"
                     placeholder="Enter matric number"
                     aria-invalid={fieldState.invalid}
+                    className="text-sm"
                   />
 
                   {fieldState.invalid && (
@@ -222,6 +269,7 @@ export function RegisterForm() {
                     id="email"
                     placeholder="Enter your email address"
                     aria-invalid={fieldState.invalid}
+                    className="text-sm"
                   />
 
                   {fieldState.invalid && (
@@ -246,10 +294,30 @@ export function RegisterForm() {
                     accept="image/*"
                     onChange={(e) => {
                       const file = e.target.files?.[0]
-                      if (file) field.onChange(file)
+                      setFileValue(file ?? null)
+                      if (file) {
+                        field.onChange(file)
+                        setValue("thumbnail", file)
+                      }
                     }}
                   />
-
+                  {isUploading && (
+                    <FieldDescription className="flex items-center gap-1 text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Uploading...
+                    </FieldDescription>
+                  )}
+                  {!isUploading && uploadedUrl && (
+                    <FieldDescription className="flex items-center gap-1 text-green-600">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Uploaded
+                    </FieldDescription>
+                  )}
+                  {!isUploading && uploadError && (
+                    <FieldDescription className="text-destructive">
+                      {uploadError}
+                    </FieldDescription>
+                  )}
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -324,8 +392,8 @@ export function RegisterForm() {
         </FieldSet>
 
         <Field orientation="horizontal">
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
+          <Button type="submit" className="w-full" disabled={isPending || isUploading}>
+            {isPending ? (
               <>
                 <svg
                   className="mr-2 -ml-1 h-4 w-4 animate-spin"
@@ -347,7 +415,7 @@ export function RegisterForm() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                {isUploading ? "Uploading image..." : "Registering..."}
+                Registering...
               </>
             ) : (
               "Register"
