@@ -8,12 +8,49 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { ArrowUp, Vote } from "lucide-react"
+import { ArrowUp, } from "lucide-react"
 import { useContestants, useVoteMutation } from "../hooks"
-
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useState } from "react"
+import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3"
+import { type ContestantWithVotes } from "../api"
+import { getConfig } from "../flutterwave-config"
+import { toast } from "sonner"
 export function ContestantsList() {
   const { data, error, isPending } = useContestants()
   const voteMutation = useVoteMutation()
+  const [selectedContestant, setSelectedContestant] = useState<ContestantWithVotes | null>(null)
+  const config = getConfig({
+    public_key: import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY,
+    tx_ref: (Date.now().toString()),
+    amount: 200,
+    currency: 'NGN',
+    payment_options: 'card,mobilemoney,ussd',
+    customer: {
+      email: "smartlify09@gmail.com",
+      phone_number: "090666927835",
+      name: "Obinna Anosike",
+    },
+    customizations: {
+      title: `Vote support`,
+      description: `Support for ${selectedContestant?.name} for ${selectedContestant?.position}`,
+      logo: 'https://example.com/logo.png', // Your store logo
+    },
+  })
+  const handleFlutterPayment = useFlutterwave(config);
+  const handleVote = () => {
+    voteMutation.mutateAsync({ contestant_id: selectedContestant?.id || "" }, {
+
+      onSuccess: () => {
+        toast.success(`Voted for ${selectedContestant?.name || ""}`)
+        setSelectedContestant(null)
+      },
+      onError: (error) => {
+        console.error(error.message)
+        toast.error(`An error occurred, try voting again`)
+      }
+    })
+  }
 
   if (isPending) {
     return <>Loading...</>
@@ -24,45 +61,79 @@ export function ContestantsList() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:gap-10">
-      {data?.data?.map((contestant) => (
-        <Card key={contestant.id} className="">
-          <CardContent className="flex flex-col gap-6">
-            <div className="h-90">
-              <img
-                src={contestant.avatarUrl}
-                alt={contestant.name + " avatar"}
-                className="h-full w-full rounded-2xl bg-center object-cover object-center"
-              />
-            </div>
-            <CardHeader className="flex items-center justify-between">
-              <div className="gap flex flex-col">
-                <CardTitle className="text-xl">{contestant.name}</CardTitle>
-                <CardDescription>{contestant.department}</CardDescription>
+      <Dialog open={!!selectedContestant}>
+        {data?.data?.map((contestant) => (
+          <Card key={contestant.id} className="">
+            <CardContent className="flex flex-col gap-6">
+              <div className="h-90">
+                <img
+                  src={contestant.avatarUrl}
+                  alt={contestant.name + " avatar"}
+                  className="h-full w-full rounded-2xl bg-center object-cover object-center"
+                />
               </div>
-              <CardAction>
-                <Badge variant={"secondary"}>{contestant.position}</Badge>
-              </CardAction>
-            </CardHeader>
-            <div className="flex items-center justify-between px-4">
-              <div className="flex items-center gap-1">
-                <Vote className="text-muted-foreground" size={20} />{" "}
-                <span className="text-sm">
-                  {contestant.votes?.[0]?.count ?? 0} votes
-                </span>
-              </div>
+              <CardHeader className="flex items-center justify-between">
+                <div className="gap flex flex-col">
+                  <CardTitle className="text-xl">{contestant.name}</CardTitle>
+                  <CardDescription>{contestant.department}</CardDescription>
+                </div>
+                <CardAction>
+                  <Badge variant={"secondary"}>{contestant.position}</Badge>
+                </CardAction>
+              </CardHeader>
+              <div className="flex items-center justify-between px-4">
+                <div className="flex  text-lg">
+                  <h1 className="text-2xl">
+                    {contestant.votes?.[0]?.count ?? 0}{' '}
+                    <span className="text-muted-foreground">
+                      votes
+                    </span>
+                  </h1>
 
-              <Button
-                disabled={voteMutation.isPending}
-                onClick={() =>
-                  voteMutation.mutate({ contestant_id: contestant.id })
-                }
-              >
-                Vote <ArrowUp />
-              </Button>
+                </div>
+
+                <DialogTrigger>
+
+                  <Button onClick={() => setSelectedContestant(contestant)}>
+                    Vote <ArrowUp />
+                  </Button>
+                </DialogTrigger>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+
+        <DialogContent className="p-8 gap-10 max-w-lg!" >
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-medium">Vote for {selectedContestant?.name || ""}!</DialogTitle>
+            <DialogDescription className="text-base">Support {selectedContestant?.name || ""} for {selectedContestant?.position || ""} and help them take the crown!</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-6">
+
+            <h1 className="text-6xl font-medium text-center text-foreground">₦200</h1>
+            <div className="flex flex-col gap-1">
+
+              <Button size={"lg"} className={"h-14 text-base"} onClick={() => handleFlutterPayment({
+                callback: (response) => {
+                  if (response.status === "completed") {
+                    closePaymentModal();
+                    handleVote()
+                  }
+
+                },
+                onClose: () => { },
+              })}>Vote now</Button>
+              <DialogTrigger>
+
+                <Button variant={"link"}>Maybe later</Button>
+              </DialogTrigger>
             </div>
-          </CardContent>
-        </Card>
-      ))}
+          </div>
+
+
+          <p className="text-xs text-center text-muted-foreground">One vote. Non-refundable</p>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

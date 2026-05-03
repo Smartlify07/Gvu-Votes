@@ -47,5 +47,6 @@ export function useVoteMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
     },
+
   })
 }
