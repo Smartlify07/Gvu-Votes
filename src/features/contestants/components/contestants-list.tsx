@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { ArrowUp, Vote } from "lucide-react"
+import { useContestants } from "../hooks"
 
 type Position = "Mr. GVU" | "Miss GVU" | "Best Pageantry"
 type Department =
@@ -83,14 +84,23 @@ const contestants: Contestant[] = [
 ]
 
 export function ContestantsList() {
+  const { data, error, isPending } = useContestants();
+  if (isPending) {
+    return <>Loading...</>
+  }
+  else if (error) {
+    return <div>{error.message}</div>
+  }
+
+
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:gap-10">
-      {contestants.map((contestant) => (
-        <Card className="">
+      {data?.data?.map((contestant) => (
+        <Card key={contestant.id} className="">
           <CardContent className="flex flex-col gap-6">
             <div className="h-90">
               <img
-                src={contestant.thumbnail}
+                src={contestant.avatarUrl}
                 alt={contestant.name + " avatar"}
                 className="h-full w-full rounded-2xl bg-center object-cover object-center"
               />
@@ -108,7 +118,7 @@ export function ContestantsList() {
               <div className="flex items-center gap-1">
                 <Vote className="text-muted-foreground" size={20} />{" "}
                 <span className="text-sm">
-                  {contestant.voteCount.toLocaleString()} votes
+                  {10} votes
                 </span>
               </div>
 
