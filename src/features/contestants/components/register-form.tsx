@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/field"
 import { toast } from "sonner"
 import { useNavigate } from "@tanstack/react-router"
-import { CheckCircle2, Loader2 } from "lucide-react"
+import { CheckCircle2, Loader2, Upload, User, Users, ImageIcon } from "lucide-react"
 import { useContestantMutation } from "../hooks"
 import { supabase } from "@/lib/supabase"
 import { Spinner } from "@/components/ui/spinner"
@@ -64,6 +65,12 @@ const formSchema = z.object({
       error: "Input must not be empty",
     })
     .min(1, "Select a position"),
+  bio: z
+    .string({
+      error: "Input must not be empty",
+    })
+    .min(10, "Bio must be at least 10 characters")
+    .max(500, "Bio must be less than 500 characters"),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -184,6 +191,7 @@ export function RegisterForm() {
           department: data.department,
           position: data.position,
           avatarUrl: thumbnailUrl,
+          bio: data.bio,
         },
         {
           onError: (error: any) => {
@@ -209,38 +217,22 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <FieldGroup>
-        <FieldSet>
-          <Controller
-            name="name"
-            control={control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="name">Name</FieldLabel>
-                <FieldContent>
-                  <Input
-                    {...field}
-                    id="name"
-                    placeholder="Enter your name"
-                    aria-invalid={fieldState.invalid}
-                    className="text-sm"
-                  />
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </FieldContent>
-              </Field>
-            )}
-          ></Controller>
-
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
+      {/* Personal Info Section */}
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center gap-2 text-lg font-medium">
+          <User className="h-5 w-5" />
+          <h2>Personal Information</h2>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
           <Controller
             name="matriculationNumber"
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="matric">Matric Number</FieldLabel>
+                <FieldLabel htmlFor="matric">
+                  Matric Number <span className="text-destructive">*</span>
+                </FieldLabel>
                 <FieldContent>
                   <Input
                     {...field}
@@ -259,15 +251,43 @@ export function RegisterForm() {
           />
 
           <Controller
+            name="name"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="name">
+                  Full Name <span className="text-destructive">*</span>
+                </FieldLabel>
+                <FieldContent>
+                  <Input
+                    {...field}
+                    id="name"
+                    placeholder="Enter your name"
+                    aria-invalid={fieldState.invalid}
+                    className="text-sm"
+                  />
+
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </FieldContent>
+              </Field>
+            )}
+          />
+
+          <Controller
             name="email"
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">
+                  Email <span className="text-destructive">*</span>
+                </FieldLabel>
                 <FieldContent>
                   <Input
                     {...field}
                     id="email"
+                    type="email"
                     placeholder="Enter your email address"
                     aria-invalid={fieldState.invalid}
                     className="text-sm"
@@ -279,60 +299,16 @@ export function RegisterForm() {
                 </FieldContent>
               </Field>
             )}
-          ></Controller>
-
-          <Controller
-            name="thumbnail"
-            control={control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="thumbnail">Thumbnail</FieldLabel>
-                <FieldContent>
-                  <Input
-                    aria-invalid={fieldState.invalid}
-                    id="thumbnail"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      setFileValue(file ?? null)
-                      if (file) {
-                        field.onChange(file)
-                        setValue("thumbnail", file)
-                      }
-                    }}
-                  />
-                  {isUploading && (
-                    <FieldDescription className="flex items-center gap-1 text-muted-foreground">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      Uploading...
-                    </FieldDescription>
-                  )}
-                  {!isUploading && uploadedUrl && (
-                    <FieldDescription className="flex items-center gap-1 text-green-600">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Uploaded
-                    </FieldDescription>
-                  )}
-                  {!isUploading && uploadError && (
-                    <FieldDescription className="text-destructive">
-                      {uploadError}
-                    </FieldDescription>
-                  )}
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </FieldContent>
-              </Field>
-            )}
-          ></Controller>
+          />
 
           <Controller
             name="department"
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="department">Department</FieldLabel>
+                <FieldLabel htmlFor="department">
+                  Department <span className="text-destructive">*</span>
+                </FieldLabel>
                 <FieldContent>
                   <Select name={field.name} onValueChange={field.onChange}>
                     <SelectTrigger
@@ -356,55 +332,156 @@ export function RegisterForm() {
                 </FieldContent>
               </Field>
             )}
-          ></Controller>
+          />
+        </div>
+      </section>
 
-          <Controller
-            name="position"
-            control={control}
-            render={({ fieldState, field }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="position">Position</FieldLabel>
-                <FieldContent className="">
-                  <Select name={field.name} onValueChange={field.onChange}>
-                    <SelectTrigger
+      {/* Contestant Details Section */}
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center gap-2 text-lg font-medium">
+          <Users className="h-5 w-5" />
+          <h2>Contestant Details</h2>
+        </div>
+        <FieldGroup>
+          <FieldSet>
+            <Controller
+              name="position"
+              control={control}
+              render={({ fieldState, field }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="position">
+                    Position Running For <span className="text-destructive">*</span>
+                  </FieldLabel>
+                  <FieldContent className="">
+                    <Select name={field.name} onValueChange={field.onChange}>
+                      <SelectTrigger
+                        aria-invalid={fieldState.invalid}
+                        className="w-full"
+                        id="position"
+                      >
+                        <SelectValue placeholder="Select position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {positions.map((p) => (
+                          <SelectItem key={p} value={p}>
+                            {p}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.position && (
+                      <FieldDescription className="text-destructive">
+                        {errors.position.message}
+                      </FieldDescription>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="bio"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="bio">
+                    Campaign Bio <span className="text-destructive">*</span>
+                  </FieldLabel>
+                  <FieldContent>
+                    <Textarea
+                      {...field}
+                      id="bio"
+                      placeholder="Tell us why people should vote for you..."
                       aria-invalid={fieldState.invalid}
-                      className="w-full"
-                      id="position"
-                    >
-                      <SelectValue placeholder="Select position" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {positions.map((p) => (
-                        <SelectItem key={p} value={p}>
-                          {p}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.position && (
-                    <FieldDescription className="text-destructive">
-                      {errors.position.message}
-                    </FieldDescription>
-                  )}
-                </FieldContent>
-              </Field>
-            )}
-          ></Controller>
-        </FieldSet>
+                      className="text-sm min-h-[120px]"
+                    />
 
-        <Field orientation="horizontal">
-          <Button type="submit" className="w-full" disabled={isPending || isUploading}>
-            {isPending ? (
-              <>
-                <Spinner />
-                Registering...
-              </>
-            ) : (
-              "Register"
-            )}
-          </Button>
-        </Field>
-      </FieldGroup>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
+            />
+          </FieldSet>
+        </FieldGroup>
+      </section>
+
+      {/* Image Section */}
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center gap-2 text-lg font-medium">
+          <ImageIcon className="h-5 w-5" />
+          <h2>Profile Image</h2>
+        </div>
+        <Controller
+          name="thumbnail"
+          control={control}
+          render={({ field, fieldState }) => (
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                className="absolute inset-0 w-full h-[300px] cursor-pointer opacity-0"
+                style={{ width: "400px", height: "300px" }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  setFileValue(file ?? null)
+                  if (file) {
+                    field.onChange(file)
+                    setValue("thumbnail", file)
+                  }
+                }}
+              />
+              <div
+                className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-input bg-background hover:bg-accent/50 transition-colors"
+                style={{ width: "400px", height: "300px" }}
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Uploading...</p></>
+                ) : uploadedUrl ? (
+                  <>
+                    <CheckCircle2 className="h-10 w-10 text-green-600" />
+                    <p className="text-sm text-green-600">Uploaded</p>
+                    <p className="text-xs text-muted-foreground">{fileValue?.name}</p>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-10 w-10 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Click to upload or drag and drop
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      PNG, JPG up to 10MB
+                    </p>
+                  </>
+                )}
+              </div>
+              {uploadError && (
+                <FieldDescription className="text-destructive mt-2">
+                  {uploadError}
+                </FieldDescription>
+              )}
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </div>
+          )}
+        />
+      </section>
+
+      {/* Submit Button */}
+      <Button type="submit" className="w-full" disabled={isPending || isUploading}>
+        {isPending ? (
+          <>
+            <Spinner />
+            Registering...
+          </>
+        ) : (
+          "Register"
+        )}
+      </Button>
     </form>
   )
 }

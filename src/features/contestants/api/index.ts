@@ -7,6 +7,7 @@ export type ContestantPayload = {
   department: string
   position: string
   avatarUrl: string
+  bio: string
 }
 
 export type VotePayload = {
@@ -21,6 +22,7 @@ export type ContestantWithVotes = {
   department: string
   position: string
   avatarUrl: string
+  bio: string
   votes: { count: number }[]
 }
 
