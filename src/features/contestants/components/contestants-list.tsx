@@ -20,6 +20,7 @@ export function ContestantsList() {
   const { data, error, isPending } = useContestants()
   const voteMutation = useVoteMutation()
   const [selectedContestant, setSelectedContestant] = useState<ContestantWithVotes | null>(null)
+  const [open, setOpen] = useState(false)
   const config = getConfig({
     public_key: import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY,
     tx_ref: (Date.now().toString()),
@@ -37,13 +38,14 @@ export function ContestantsList() {
       logo: 'https://example.com/logo.png', // Your store logo
     },
   })
+
   const handleFlutterPayment = useFlutterwave(config);
   const handleVote = () => {
     voteMutation.mutateAsync({ contestant_id: selectedContestant?.id || "" }, {
 
       onSuccess: () => {
         toast.success(`Voted for ${selectedContestant?.name || ""}`)
-        setSelectedContestant(null)
+        setSelectedContestant(null); setOpen(false)
       },
       onError: (error) => {
         console.error(error.message)
@@ -61,7 +63,7 @@ export function ContestantsList() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:gap-10">
-      <Dialog open={!!selectedContestant}>
+      <Dialog onOpenChange={setOpen} open={open}>
         {data?.data?.map((contestant) => (
           <Card key={contestant.id} className="">
             <CardContent className="flex flex-col gap-6">
@@ -94,7 +96,7 @@ export function ContestantsList() {
 
                 <DialogTrigger>
 
-                  <Button onClick={() => setSelectedContestant(contestant)}>
+                  <Button onClick={() => { setSelectedContestant(contestant); setOpen(true) }}>
                     Vote <ArrowUp />
                   </Button>
                 </DialogTrigger>
