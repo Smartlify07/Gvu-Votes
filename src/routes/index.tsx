@@ -1,24 +1,159 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { ContestantsList } from "@/features/contestants/components/contestants-list"
-import { cn } from "@/lib/utils"
+import { useContestants } from "@/features/contestants/hooks"
+import { Trophy, Users, Vote, ArrowRight, Crown, Sparkles } from "lucide-react"
+import { useState } from "react"
 
 export const Route = createFileRoute("/")({ component: App })
 
+const categories = [
+  { label: "All", value: "All" },
+  { label: "Mr GVU", value: "Mr Gvu" },
+  { label: "Miss GVU", value: "Miss GVU" },
+  { label: "Best Ebony Male", value: "Best Ebony Male" },
+  { label: "Best Ebony Female", value: "Best Ebony Female" },
+  { label: "Best dressed", value: "Best dressed" },
+  { label: "Pageantry", value: "Pageantry" },
+]
+
 function App() {
+  const { data: contestantsData, isPending } = useContestants()
+  const [selectedCategory, setSelectedCategory] = useState("All")
+
+  const totalContestants = contestantsData?.data?.length ?? 0
+  const totalVotes = contestantsData?.data?.reduce(
+    (sum, c) => sum + (c.votes?.[0]?.count ?? 0),
+    0
+  ) ?? 0
+  const totalPositions = new Set(contestantsData?.data?.map((c) => c.position) ?? []).size
+
+  const scrollToContestants = () => {
+    document.getElementById("contestants")?.scrollIntoView({ behavior: "smooth" })
+  }
+
   return (
-    <div className="flex min-h-svh p-6 lg:p-12">
-      <section className="flex w-full flex-col gap-6">
-        <div className="flex flex-col gap-1 lg:flex-row lg:items-start lg:items-center justify-between">
-
-          <h1 className="lg:text-center text-3xl font-medium">
-            Vote for your spec!
-          </h1>
-
-          <Link to="/register" className={cn(buttonVariants({ variant: "default", }), "self-start lg:self-stretch")}>Register as a contestant</Link>
+    <div className="min-h-screen">
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-background/80 backdrop-blur-md border-b">
+        <div className="flex items-center gap-2">
+          <Crown className="h-6 w-6 text-yellow-500" />
+          <span className="text-xl font-bold">GVU Votes</span>
         </div>
-        <ContestantsList />
+        <div className="flex items-center gap-4">
+          <Button variant="ghost">
+            <a href="#contestants">Leaderboard</a>
+          </Button>
+          <Button>
+            <Link to="/register">Register</Link>
+          </Button>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-24 text-center">
+        <div className="flex flex-col items-center gap-6 max-w-3xl">
+          <Badge variant="secondary" className="gap-2 px-4 py-1">
+            <Sparkles className="h-3 w-3" />
+            2026 Edition
+          </Badge>
+          
+          <h1 className="text-4xl font-bold tracking-tight lg:text-6xl">
+            Vote for Your Next
+            <span className="text-yellow-500"> GVU Royalty</span>
+          </h1>
+          
+          <p className="text-lg text-muted-foreground max-w-xl">
+            Join the most exciting campus election experience. 
+            Register as a contestant or cast your vote for your favorite candidate.
+          </p>
+          
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <Button size="lg">
+              <Link to="/register">
+                Register as Contestant
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" onClick={scrollToContestants}>
+              Cast Your Vote
+            </Button>
+          </div>
+        </div>
       </section>
+
+      {/* Stats Section */}
+      <section className="py-16 px-6 bg-muted/50">
+        <div className="mx-auto grid max-w-4xl grid-cols-3 gap-8">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Users className="h-8 w-8 text-yellow-500" />
+            <div className="text-3xl font-bold">{totalContestants}</div>
+            <div className="text-sm text-muted-foreground">Total Contestants</div>
+          </div>
+          
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Vote className="h-8 w-8 text-yellow-500" />
+            <div className="text-3xl font-bold">{totalVotes.toLocaleString()}</div>
+            <div className="text-sm text-muted-foreground">Total Votes</div>
+          </div>
+          
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Trophy className="h-8 w-8 text-yellow-500" />
+            <div className="text-3xl font-bold">{totalPositions}</div>
+            <div className="text-sm text-muted-foreground">Positions</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Meet the Contestants Section */}
+      <section id="contestants" className="py-16 px-6 scroll-mt-24">
+        <div className="mx-auto flex flex-col gap-8 max-w-6xl">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <h2 className="text-3xl font-bold">Meet the Contestants</h2>
+            <p className="text-muted-foreground">
+              Get to know the amazing candidates vying for the crown this year
+            </p>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex flex-wrap justify-center gap-2">
+            {categories.map((category) => (
+              <Button
+                key={category.value}
+                variant={selectedCategory === category.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(category.value)}
+                className="rounded-full"
+              >
+                {category.label}
+              </Button>
+            ))}
+          </div>
+
+          {/* Contestants List */}
+          {isPending ? (
+            <div className="flex justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-current border-t-transparent" />
+            </div>
+          ) : (
+            <ContestantsList category={selectedCategory} />
+          )}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-12 px-6">
+        <div className="mx-auto flex flex-col items-center justify-between gap-4 max-w-6xl sm:flex-row">
+          <div className="flex items-center gap-2">
+            <Crown className="h-5 w-5 text-yellow-500" />
+            <span className="font-semibold">GVU Votes</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            © 2026 GVU Votes. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }

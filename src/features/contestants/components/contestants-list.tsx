@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { ArrowUp, } from "lucide-react"
 import { useContestants, useVoteMutation } from "../hooks"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useState } from "react"
@@ -16,7 +15,12 @@ import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3"
 import { type ContestantWithVotes } from "../api"
 import { getConfig } from "../flutterwave-config"
 import { toast } from "sonner"
-export function ContestantsList() {
+
+export type ContestantsListProps = {
+  category?: string
+}
+
+export function ContestantsList({ category = "All" }: ContestantsListProps) {
   const { data, error, isPending } = useContestants()
   const voteMutation = useVoteMutation()
   const [selectedContestant, setSelectedContestant] = useState<ContestantWithVotes | null>(null)
@@ -64,7 +68,9 @@ export function ContestantsList() {
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:gap-10">
       <Dialog onOpenChange={setOpen} open={open}>
-        {data?.data?.map((contestant) => (
+        {data?.data
+          ?.filter((c) => category === "All" || c.position === category)
+          .map((contestant) => (
           <Card key={contestant.id} className="">
             <CardContent className="flex flex-col gap-6">
               <div className="h-90">
