@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
   CardAction,
@@ -16,6 +16,8 @@ import { type ContestantWithVotes } from "../api"
 import { getConfig } from "../flutterwave-config"
 import { toast } from "sonner"
 import { UsersRound } from "lucide-react"
+import { Link } from "@tanstack/react-router"
+import { cn } from "@/lib/utils"
 
 export type ContestantsListProps = {
   category?: string
@@ -76,6 +78,9 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
             <p className="text-sm text-muted-foreground">
               Be the first to register for {category === "All" ? "this position" : category}!
             </p>
+            <Link to="/register" className={cn(buttonVariants({
+              variant: "default", size: "lg"
+            }), "mt-4")}>Register</Link>
           </div>
         </div>
       ) : (
@@ -83,79 +88,79 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
           {data?.data
             ?.filter((c) => category === "All" || c.position === category)
             .map((contestant) => (
-            <Card key={contestant.id} className="">
-              <CardContent className="flex flex-col gap-6">
-                <div className="h-90">
-                  <img
-                    src={contestant.avatarUrl}
-                    alt={contestant.name + " avatar"}
-                    className="h-full w-full rounded-2xl bg-center object-cover object-center"
-                  />
-                </div>
-                <CardHeader className="flex flex-col gap-2">
-                  <div className="flex items-center w-full justify-between">
-                    <div className="gap flex flex-col">
-                      <CardTitle className="text-xl truncate max-w-60">{contestant.name}</CardTitle>
-                      <CardDescription>{contestant.department}</CardDescription>
+              <Card key={contestant.id} className="">
+                <CardContent className="flex flex-col gap-6">
+                  <div className="h-90">
+                    <img
+                      src={contestant.avatarUrl}
+                      alt={contestant.name + " avatar"}
+                      className="h-full w-full rounded-2xl bg-center object-cover object-center"
+                    />
+                  </div>
+                  <CardHeader className="flex flex-col gap-2">
+                    <div className="flex items-center w-full justify-between">
+                      <div className="gap flex flex-col">
+                        <CardTitle className="text-xl truncate max-w-60">{contestant.name}</CardTitle>
+                        <CardDescription>{contestant.department}</CardDescription>
+                      </div>
+                      <CardAction>
+                        <Badge variant={"secondary"}>{contestant.position}</Badge>
+                      </CardAction>
                     </div>
-                    <CardAction>
-                      <Badge variant={"secondary"}>{contestant.position}</Badge>
-                    </CardAction>
+                    <CardDescription className="text-sm">{contestant.bio ?? ""}</CardDescription>
+                  </CardHeader>
+                  <div className="flex flex-col gap-4 justify-between px-4">
+
+                    <div className="flex text-lg">
+                      <h1 className="text-3xl text-primary font-semibold">
+                        {contestant.votes?.[0]?.count ?? 0}{' '}
+                        <span className="text-muted-foreground text-base font-normal">
+                          {(contestant.votes?.[0]?.count > 1 || contestant.votes?.[0]?.count === 0) ? "Votes" : "Vote"}
+                        </span>
+                      </h1>
+                    </div>
+
+
+                    <DialogTrigger>
+                      <Button className={"w-full h-12 text-lg"} size={"lg"} onClick={() => { setSelectedContestant(contestant); setOpen(true) }}>
+                        Vote for {contestant.name.split(" ")[0]} ⭐
+                      </Button>
+                    </DialogTrigger>
                   </div>
-                  <CardDescription className="text-sm">{contestant.bio ?? ""}</CardDescription>
-                </CardHeader>
-                <div className="flex flex-col gap-4 justify-between px-4">
+                </CardContent>
+              </Card>
+            ))}
 
-                  <div className="flex text-lg">
-                    <h1 className="text-3xl text-primary font-semibold">
-                      {contestant.votes?.[0]?.count ?? 0}{' '}
-                      <span className="text-muted-foreground text-base font-normal">
-                        {(contestant.votes?.[0]?.count > 1 || contestant.votes?.[0]?.count === 0) ? "Votes" : "Vote"}
-                      </span>
-                    </h1>
-                  </div>
+          <DialogContent className="p-8 gap-10 max-w-lg!" >
+            <DialogHeader>
+              <DialogTitle className="text-3xl font-medium">Vote for {selectedContestant?.name || ""}!</DialogTitle>
+              <DialogDescription className="text-base">Support {selectedContestant?.name || ""} for {selectedContestant?.position || ""} and help them take the crown!</DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-6">
 
+              <h1 className="text-6xl font-medium text-center text-foreground">₦200</h1>
+              <div className="flex flex-col gap-1">
 
-                  <DialogTrigger>
-                    <Button className={"w-full h-12 text-lg"} size={"lg"} onClick={() => { setSelectedContestant(contestant); setOpen(true) }}>
-                      Vote for {contestant.name.split(" ")[0]} ⭐
-                    </Button>
-                  </DialogTrigger>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                <Button size={"lg"} className={"h-14 text-base"} onClick={() => handleFlutterPayment({
+                  callback: (response) => {
+                    if (response.status === "completed") {
+                      closePaymentModal();
+                      handleVote()
+                    }
 
-        <DialogContent className="p-8 gap-10 max-w-lg!" >
-          <DialogHeader>
-            <DialogTitle className="text-3xl font-medium">Vote for {selectedContestant?.name || ""}!</DialogTitle>
-            <DialogDescription className="text-base">Support {selectedContestant?.name || ""} for {selectedContestant?.position || ""} and help them take the crown!</DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-6">
+                  },
+                  onClose: () => { },
+                })}>Vote now</Button>
+                <DialogTrigger>
 
-            <h1 className="text-6xl font-medium text-center text-foreground">₦200</h1>
-            <div className="flex flex-col gap-1">
-
-              <Button size={"lg"} className={"h-14 text-base"} onClick={() => handleFlutterPayment({
-                callback: (response) => {
-                  if (response.status === "completed") {
-                    closePaymentModal();
-                    handleVote()
-                  }
-
-                },
-                onClose: () => { },
-              })}>Vote now</Button>
-              <DialogTrigger>
-
-                <Button variant={"link"}>Maybe later</Button>
-              </DialogTrigger>
+                  <Button variant={"link"}>Maybe later</Button>
+                </DialogTrigger>
+              </div>
             </div>
-          </div>
 
 
-          <p className="text-xs text-center text-muted-foreground">One vote. Non-refundable</p>
-        </DialogContent>
+            <p className="text-xs text-center text-muted-foreground">One vote. Non-refundable</p>
+          </DialogContent>
         </Dialog>
       )}
     </div>
