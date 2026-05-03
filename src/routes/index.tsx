@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ContestantsList } from "@/features/contestants/components/contestants-list"
 import { useContestants } from "@/features/contestants/hooks"
 import { Trophy, Users, Vote, ArrowRight, Crown, Sparkles } from "lucide-react"
 import { useState } from "react"
+import Logo from "../../public/logo.jpg"
 
 export const Route = createFileRoute("/")({ component: App })
 
@@ -38,7 +39,7 @@ function App() {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-background/80 backdrop-blur-md border-b">
         <div className="flex items-center gap-2">
-          <Crown className="h-6 w-6 text-yellow-500" />
+          <img src={Logo} className="size-8" alt="GVU School Logo" />
           <span className="text-xl font-bold">GVU Votes</span>
         </div>
         <div className="flex items-center gap-4">
@@ -54,28 +55,26 @@ function App() {
       {/* Hero Section */}
       <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-24 text-center">
         <div className="flex flex-col items-center gap-6 max-w-3xl">
-          <Badge variant="secondary" className="gap-2 px-4 py-1">
-            <Sparkles className="h-3 w-3" />
+          <Badge variant="secondary" className="gap-2 px-4 h-8 py-3 text-base">
+            <Sparkles className="" size={20} />
             2026 Edition
           </Badge>
-          
+
           <h1 className="text-4xl font-bold tracking-tight lg:text-6xl">
             Vote for Your Next
             <span className="text-yellow-500"> GVU Royalty</span>
           </h1>
-          
+
           <p className="text-lg text-muted-foreground max-w-xl">
-            Join the most exciting campus election experience. 
+            Join the most exciting campus election experience.
             Register as a contestant or cast your vote for your favorite candidate.
           </p>
-          
+
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Button size="lg">
-              <Link to="/register">
-                Register as Contestant
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <Link className={buttonVariants({ variant: "default", size: "lg" })} to="/register">
+              Register as Contestant
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
             <Button size="lg" variant="outline" onClick={scrollToContestants}>
               Cast Your Vote
             </Button>
@@ -91,13 +90,13 @@ function App() {
             <div className="text-3xl font-bold">{totalContestants}</div>
             <div className="text-sm text-muted-foreground">Total Contestants</div>
           </div>
-          
+
           <div className="flex flex-col items-center gap-2 text-center">
             <Vote className="h-8 w-8 text-yellow-500" />
             <div className="text-3xl font-bold">{totalVotes.toLocaleString()}</div>
             <div className="text-sm text-muted-foreground">Total Votes</div>
           </div>
-          
+
           <div className="flex flex-col items-center gap-2 text-center">
             <Trophy className="h-8 w-8 text-yellow-500" />
             <div className="text-3xl font-bold">{totalPositions}</div>
@@ -108,7 +107,7 @@ function App() {
 
       {/* Meet the Contestants Section */}
       <section id="contestants" className="py-16 px-6 scroll-mt-24">
-        <div className="mx-auto flex flex-col gap-8 max-w-6xl">
+        <div className="mx-auto flex flex-col gap-8 max-w-7xl">
           <div className="flex flex-col items-center gap-4 text-center">
             <h2 className="text-3xl font-bold">Meet the Contestants</h2>
             <p className="text-muted-foreground">
@@ -144,7 +143,7 @@ function App() {
 
       {/* Footer */}
       <footer className="border-t py-12 px-6">
-        <div className="mx-auto flex flex-col items-center justify-between gap-4 max-w-6xl sm:flex-row">
+        <div className="mx-auto flex flex-col items-center justify-between gap-4 max-w-8xl sm:flex-row">
           <div className="flex items-center gap-2">
             <Crown className="h-5 w-5 text-yellow-500" />
             <span className="font-semibold">GVU Votes</span>

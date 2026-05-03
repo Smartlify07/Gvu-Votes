@@ -15,6 +15,7 @@ import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3"
 import { type ContestantWithVotes } from "../api"
 import { getConfig } from "../flutterwave-config"
 import { toast } from "sonner"
+import { UsersRound } from "lucide-react"
 
 export type ContestantsListProps = {
   category?: string
@@ -66,53 +67,64 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3 lg:gap-10">
-      <Dialog onOpenChange={setOpen} open={open}>
-        {data?.data
-          ?.filter((c) => category === "All" || c.position === category)
-          .map((contestant) => (
-          <Card key={contestant.id} className="">
-            <CardContent className="flex flex-col gap-6">
-              <div className="h-90">
-                <img
-                  src={contestant.avatarUrl}
-                  alt={contestant.name + " avatar"}
-                  className="h-full w-full rounded-2xl bg-center object-cover object-center"
-                />
-              </div>
-              <CardHeader className="flex flex-col gap-2">
-                <div className="flex items-center w-full justify-between">
-                  <div className="gap flex flex-col">
-                    <CardTitle className="text-xl">{contestant.name}</CardTitle>
-                    <CardDescription>{contestant.department}</CardDescription>
+    <div className="grid gap-6 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-10">
+      {(!data?.data?.filter((c) => category === "All" || c.position === category).length) ? (
+        <div className="col-span-full flex flex-col items-center justify-center gap-4 py-16 text-center">
+          <UsersRound className="h-16 w-16 text-muted-foreground/50" />
+          <div className="flex flex-col gap-2">
+            <h3 className="text-lg font-medium">No contestants yet</h3>
+            <p className="text-sm text-muted-foreground">
+              Be the first to register for {category === "All" ? "this position" : category}!
+            </p>
+          </div>
+        </div>
+      ) : (
+        <Dialog onOpenChange={setOpen} open={open}>
+          {data?.data
+            ?.filter((c) => category === "All" || c.position === category)
+            .map((contestant) => (
+            <Card key={contestant.id} className="">
+              <CardContent className="flex flex-col gap-6">
+                <div className="h-90">
+                  <img
+                    src={contestant.avatarUrl}
+                    alt={contestant.name + " avatar"}
+                    className="h-full w-full rounded-2xl bg-center object-cover object-center"
+                  />
+                </div>
+                <CardHeader className="flex flex-col gap-2">
+                  <div className="flex items-center w-full justify-between">
+                    <div className="gap flex flex-col">
+                      <CardTitle className="text-xl truncate max-w-60">{contestant.name}</CardTitle>
+                      <CardDescription>{contestant.department}</CardDescription>
+                    </div>
+                    <CardAction>
+                      <Badge variant={"secondary"}>{contestant.position}</Badge>
+                    </CardAction>
                   </div>
-                  <CardAction>
-                    <Badge variant={"secondary"}>{contestant.position}</Badge>
-                  </CardAction>
+                  <CardDescription className="text-sm">{contestant.bio ?? ""}</CardDescription>
+                </CardHeader>
+                <div className="flex flex-col gap-4 justify-between px-4">
+
+                  <div className="flex text-lg">
+                    <h1 className="text-3xl text-primary font-semibold">
+                      {contestant.votes?.[0]?.count ?? 0}{' '}
+                      <span className="text-muted-foreground text-base font-normal">
+                        {(contestant.votes?.[0]?.count > 1 || contestant.votes?.[0]?.count === 0) ? "Votes" : "Vote"}
+                      </span>
+                    </h1>
+                  </div>
+
+
+                  <DialogTrigger>
+                    <Button className={"w-full h-12 text-lg"} size={"lg"} onClick={() => { setSelectedContestant(contestant); setOpen(true) }}>
+                      Vote for {contestant.name.split(" ")[0]} ⭐
+                    </Button>
+                  </DialogTrigger>
                 </div>
-                <CardDescription className="text-sm">{contestant.bio ?? ""}</CardDescription>
-              </CardHeader>
-              <div className="flex flex-col gap-4 justify-between px-4">
-
-                <div className="flex text-lg">
-                  <h1 className="text-3xl text-primary font-semibold">
-                    {contestant.votes?.[0]?.count ?? 0}{' '}
-                    <span className="text-muted-foreground text-base font-normal">
-                      {(contestant.votes?.[0]?.count > 1 || contestant.votes?.[0]?.count === 0) ? "Votes" : "Vote"}
-                    </span>
-                  </h1>
-                </div>
-
-
-                <DialogTrigger>
-                  <Button className={"w-full h-12 text-lg"} size={"lg"} onClick={() => { setSelectedContestant(contestant); setOpen(true) }}>
-                    Vote for {contestant.name.split(" ")[0]} ⭐
-                  </Button>
-                </DialogTrigger>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
 
         <DialogContent className="p-8 gap-10 max-w-lg!" >
           <DialogHeader>
@@ -144,7 +156,8 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
 
           <p className="text-xs text-center text-muted-foreground">One vote. Non-refundable</p>
         </DialogContent>
-      </Dialog>
+        </Dialog>
+      )}
     </div>
   )
 }
