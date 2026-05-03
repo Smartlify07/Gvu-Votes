@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -24,6 +25,8 @@ import { useNavigate } from "@tanstack/react-router"
 import { useContestantMutation } from "../hooks"
 import { supabase } from "@/lib/supabase"
 
+const MAX_FILE_SIZE = 10000000 // 10MB
+
 const formSchema = z.object({
   name: z
     .string({
@@ -40,10 +43,10 @@ const formSchema = z.object({
     .union([
       z
         .instanceof(File, { message: "Image is required" })
-        .refine((file) => !file || file.size !== 0 || file.size <= 5000000, {
-          message: "Max size exceeded",
+        .refine((file) => file.size <= MAX_FILE_SIZE, {
+          message: "Image size exceeds 10MB limit",
         }),
-      z.string().optional(), // to hold default image
+      z.string().optional(),
     ])
     .refine((value) => value instanceof File || typeof value === "string", {
       message: "Image is required",
@@ -80,6 +83,7 @@ const positions = [
 export function RegisterForm() {
   const navigate = useNavigate()
   const { mutateAsync, isPending } = useContestantMutation()
+  const [isUploading, setIsUploading] = useState(false)
 
   const {
     handleSubmit,
@@ -89,6 +93,8 @@ export function RegisterForm() {
     resolver: zodResolver(formSchema) as any,
   })
 
+  const isLoading = isUploading || isPending
+
   const onSubmit = async (data: FormData) => {
     let thumbnailUrl = ""
 
@@ -97,9 +103,13 @@ export function RegisterForm() {
       const fileExt = file.name.split(".").pop()
       const fileName = `${Date.now()}.${fileExt}`
 
+      setIsUploading(true)
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("contestants")
         .upload(fileName, file)
+
+      setIsUploading(false)
 
       if (uploadError) {
         console.error(uploadError)
@@ -116,25 +126,40 @@ export function RegisterForm() {
       thumbnailUrl = data.thumbnail
     }
 
-    await mutateAsync(
-      {
-        name: data.name,
-        matriculationNumber: data.matriculationNumber,
-        email: data.email,
-        department: data.department,
-        position: data.position,
-        avatarUrl: thumbnailUrl as string,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Registration successful!")
-          navigate({ to: "/" })
+    try {
+      await mutateAsync(
+        {
+          name: data.name,
+          matriculationNumber: data.matriculationNumber,
+          email: data.email,
+          department: data.department,
+          position: data.position,
+          avatarUrl: thumbnailUrl as string,
         },
-        onError: () => {
-          toast.error("Registration failed. Please try again.")
-        },
-      }
-    )
+        {
+          onError: (error: any) => {
+            console.error(error)
+            if (
+              error?.code === "23505" ||
+              error?.message?.includes("duplicate key") ||
+              error?.message?.includes("unique constraint")
+            ) {
+              toast.error("You have already registered with this matriculation number or email.")
+            } else {
+              toast.error("Registration failed. Please try again.")
+            }
+          },
+          onSuccess: () => {
+            toast.success("Registration successful!")
+            navigate({ to: "/" })
+          },
+
+        }
+      )
+    } catch {
+      // Error already handled in onError
+      // console.error(error)
+    }
   }
 
   return (
@@ -299,8 +324,8 @@ export function RegisterForm() {
         </FieldSet>
 
         <Field orientation="horizontal">
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
               <>
                 <svg
                   className="mr-2 -ml-1 h-4 w-4 animate-spin"
@@ -322,7 +347,7 @@ export function RegisterForm() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Registering...
+                {isUploading ? "Uploading image..." : "Registering..."}
               </>
             ) : (
               "Register"

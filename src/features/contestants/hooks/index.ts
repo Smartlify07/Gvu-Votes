@@ -25,6 +25,10 @@ export function useContestantMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
     },
+    onError: (error) => {
+      console.error(error);
+      throw error
+    }
   })
 }
 
