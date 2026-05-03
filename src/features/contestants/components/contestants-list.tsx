@@ -74,30 +74,33 @@ export function ContestantsList() {
                   className="h-full w-full rounded-2xl bg-center object-cover object-center"
                 />
               </div>
-              <CardHeader className="flex items-center justify-between">
-                <div className="gap flex flex-col">
-                  <CardTitle className="text-xl">{contestant.name}</CardTitle>
-                  <CardDescription>{contestant.department}</CardDescription>
+              <CardHeader className="flex flex-col gap-2">
+                <div className="flex items-center w-full justify-between">
+                  <div className="gap flex flex-col">
+                    <CardTitle className="text-xl">{contestant.name}</CardTitle>
+                    <CardDescription>{contestant.department}</CardDescription>
+                  </div>
+                  <CardAction>
+                    <Badge variant={"secondary"}>{contestant.position}</Badge>
+                  </CardAction>
                 </div>
-                <CardAction>
-                  <Badge variant={"secondary"}>{contestant.position}</Badge>
-                </CardAction>
+                <CardDescription className="text-sm">{contestant.bio ?? ""}</CardDescription>
               </CardHeader>
-              <div className="flex items-center justify-between px-4">
-                <div className="flex  text-lg">
-                  <h1 className="text-2xl">
+              <div className="flex flex-col gap-4 justify-between px-4">
+
+                <div className="flex text-lg">
+                  <h1 className="text-3xl text-primary font-semibold">
                     {contestant.votes?.[0]?.count ?? 0}{' '}
-                    <span className="text-muted-foreground">
-                      votes
+                    <span className="text-muted-foreground text-base font-normal">
+                      {(contestant.votes?.[0]?.count > 1 || contestant.votes?.[0]?.count === 0) ? "Votes" : "Vote"}
                     </span>
                   </h1>
-
                 </div>
 
-                <DialogTrigger>
 
-                  <Button onClick={() => { setSelectedContestant(contestant); setOpen(true) }}>
-                    Vote <ArrowUp />
+                <DialogTrigger>
+                  <Button className={"w-full h-12 text-lg"} size={"lg"} onClick={() => { setSelectedContestant(contestant); setOpen(true) }}>
+                    Vote for {contestant.name.split(" ")[0]} ⭐
                   </Button>
                 </DialogTrigger>
               </div>
