@@ -123,6 +123,7 @@ export function RegisterForm() {
         email: data.email,
         department: data.department,
         position: data.position,
+        avatarUrl: thumbnailUrl as string,
       },
       {
         onSuccess: () => {

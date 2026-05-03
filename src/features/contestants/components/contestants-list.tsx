@@ -9,88 +9,27 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { ArrowUp, Vote } from "lucide-react"
-
-type Position = "Mr. GVU" | "Miss GVU" | "Best Pageantry"
-type Department =
-  | "Mass Communication"
-  | "Computer Science"
-  | "Economics"
-  | "Accounting"
-
-interface Contestant {
-  id: string
-  name: string
-  department: Department // Added field
-  position: Position
-  voteCount: number
-  thumbnail: string
-}
-const contestants: Contestant[] = [
-  {
-    id: "GVU-2026-001",
-    name: "Chidi Okechukwu",
-    department: "Computer Science",
-    position: "Mr. GVU",
-    voteCount: 1240,
-    thumbnail:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80",
-  },
-  {
-    id: "GVU-2026-002",
-    name: "Sarah Adenuga",
-    department: "Mass Communication",
-    position: "Miss GVU",
-    voteCount: 1580,
-    thumbnail:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80",
-  },
-  {
-    id: "GVU-2026-003",
-    name: "David Adeleke",
-    department: "Economics",
-    position: "Mr. GVU",
-    voteCount: 945,
-    thumbnail:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80",
-  },
-  {
-    id: "GVU-2026-004",
-    name: "Amara Kanu",
-    department: "Accounting",
-    position: "Miss GVU",
-    voteCount: 2100,
-    thumbnail:
-      "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80",
-  },
-  {
-    id: "GVU-2026-005",
-    name: "Emmanuel Etim",
-    department: "Computer Science",
-    position: "Best Pageantry",
-    voteCount: 870,
-    thumbnail:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80",
-  },
-  {
-    id: "GVU-2026-006",
-    name: "Blessing Sunday",
-    department: "Mass Communication",
-    position: "Best Pageantry",
-    voteCount: 1125,
-    thumbnail:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80",
-  },
-]
+import { useContestants, useVoteMutation } from "../hooks"
 
 export function ContestantsList() {
+  const { data, error, isPending } = useContestants()
+  const voteMutation = useVoteMutation()
+
+  if (isPending) {
+    return <>Loading...</>
+  }
+  else if (error) {
+    return <div>{error.message}</div>
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:gap-10">
-      {contestants.map((contestant) => (
-        <Card className="">
+      {data?.data?.map((contestant) => (
+        <Card key={contestant.id} className="">
           <CardContent className="flex flex-col gap-6">
             <div className="h-90">
               <img
-                src={contestant.thumbnail}
+                src={contestant.avatarUrl}
                 alt={contestant.name + " avatar"}
                 className="h-full w-full rounded-2xl bg-center object-cover object-center"
               />
@@ -108,11 +47,16 @@ export function ContestantsList() {
               <div className="flex items-center gap-1">
                 <Vote className="text-muted-foreground" size={20} />{" "}
                 <span className="text-sm">
-                  {contestant.voteCount.toLocaleString()} votes
+                  {contestant.votes?.[0]?.count ?? 0} votes
                 </span>
               </div>
 
-              <Button>
+              <Button
+                disabled={voteMutation.isPending}
+                onClick={() =>
+                  voteMutation.mutate({ contestant_id: contestant.id })
+                }
+              >
                 Vote <ArrowUp />
               </Button>
             </div>
