@@ -6,6 +6,7 @@ import { useContestants } from "@/features/contestants/hooks"
 import { Trophy, Users, Vote, ArrowRight, Crown, Sparkles } from "lucide-react"
 import { useState } from "react"
 import Logo from "../../public/logo.jpg"
+import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/")({ component: App })
 
@@ -43,12 +44,9 @@ function App() {
           <span className="text-xl font-bold">GVU Votes</span>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost">
-            <a href="#contestants">Leaderboard</a>
-          </Button>
-          <Button>
-            <Link to="/register">Register</Link>
-          </Button>
+          <a className={cn(buttonVariants({ variant: "ghost", size: "lg" }))} href="#contestants">Leaderboard</a>
+          <Link className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")} to="/register">
+            Become a contestant</Link>
         </div>
       </nav>
 
@@ -71,7 +69,7 @@ function App() {
           </p>
 
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Link className={buttonVariants({ variant: "default", size: "lg" })} to="/register">
+            <Link className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")} to="/register">
               Register as Contestant
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
