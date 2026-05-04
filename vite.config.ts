@@ -18,6 +18,10 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  server: {
+    allowedHosts: ["localhost", ".outray.app", ".vercel.app"]
+  }
+
 })
 
 export default config

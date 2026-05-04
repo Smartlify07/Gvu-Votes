@@ -8,9 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { useContestants, useVoteMutation } from "../hooks"
+import { CONTESTANTS_QUERY_KEY, useContestants, useVoteMutation } from "../hooks"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3"
 import { type ContestantWithVotes } from "../api"
 import { getConfig } from "../flutterwave-config"
@@ -18,6 +18,8 @@ import { toast } from "sonner"
 import { UsersRound } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabase"
+import { useQueryClient } from "@tanstack/react-query"
 
 export type ContestantsListProps = {
   category?: string
@@ -28,6 +30,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
   const voteMutation = useVoteMutation()
   const [selectedContestant, setSelectedContestant] = useState<ContestantWithVotes | null>(null)
   const [open, setOpen] = useState(false)
+  const queryClient = useQueryClient()
   const config = getConfig({
     public_key: import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY,
     tx_ref: (Date.now().toString()),
@@ -60,6 +63,29 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
       }
     })
   }
+
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("votes-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "votes",
+        },
+        (data) => {
+          console.log("New record", data.new)
+          queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
+        }
+      )
+      .subscribe((status) => console.log("realtime status", status))
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [queryClient])
+
 
   if (isPending) {
     return <>Loading...</>
