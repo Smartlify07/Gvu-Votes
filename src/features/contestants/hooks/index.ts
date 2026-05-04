@@ -8,14 +8,15 @@ import {
   type VotePayload,
 } from "../api"
 
-const CONTESTANTS_QUERY_KEY = ["contestants"]
-const VOTES_QUERY_KEY = "votes"
+export const CONTESTANTS_QUERY_KEY = ["contestants"]
+export const VOTES_QUERY_KEY = "votes"
 
 export function useContestants() {
-  return useQuery({
+  const query = useQuery({
     queryKey: CONTESTANTS_QUERY_KEY,
     queryFn: () => getContestants(),
   })
+  return query
 }
 
 export function useContestantMutation() {
