@@ -5,8 +5,8 @@ import { ContestantsList } from "@/features/contestants/components/contestants-l
 import { useContestants } from "@/features/contestants/hooks"
 import { Trophy, Users, Vote, ArrowRight, Crown, Sparkles } from "lucide-react"
 import { useState } from "react"
-import Logo from "../../public/logo.jpg"
 import { cn } from "@/lib/utils"
+import { Navbar } from "@/components/navbar"
 
 export const Route = createFileRoute("/")({ component: App })
 
@@ -37,18 +37,7 @@ function App() {
 
   return (
     <div className="min-h-screen">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-background/80 backdrop-blur-md border-b">
-        <div className="flex items-center gap-2">
-          <img src={Logo} className="size-8" alt="GVU School Logo" />
-          <span className="text-xl font-bold">GVU Votes</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <a className={cn(buttonVariants({ variant: "ghost", size: "lg" }))} href="#contestants">Leaderboard</a>
-          <Link className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")} to="/register">
-            Become a contestant</Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-24 text-center">
