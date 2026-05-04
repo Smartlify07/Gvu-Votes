@@ -8,8 +8,8 @@ export type PodiumItemProps = {
 function PodiumItem({ contestant, rank }: PodiumItemProps) {
   const voteCount = contestant.votes?.[0]?.count ?? 0
 
-  const podiumWidthClass = rank === 1 
-    ? "w-32 md:w-40" 
+  const podiumWidthClass = rank === 1
+    ? "w-32 md:w-40"
     : "w-24 md:w-32"
 
   const heightClass = rank === 1
@@ -49,12 +49,12 @@ function PodiumItem({ contestant, rank }: PodiumItemProps) {
 
       {/* Vote count */}
       <p className={`font-bold ${textClass}`}>
-        {voteCount.toLocaleString()}
+        {voteCount.toLocaleString()} votes
       </p>
 
       {/* Podium block */}
       <div className={`${podiumWidthClass} ${heightClass} bg-yellow-500 rounded-t-lg flex items-end justify-center pb-1 md:pb-2`}>
-        <span className="text-white font-bold text-sm md:text-lg">#{rank}</span>
+        <span className="text-white font-bold text-sm md:text-xl">#{rank}</span>
       </div>
     </div>
   )

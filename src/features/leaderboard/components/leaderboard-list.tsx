@@ -12,11 +12,10 @@ function LeaderboardItem({ contestant, rank, maxVotes }: LeaderboardItemProps) {
   const progressWidth = maxVotes > 0 ? (voteCount / maxVotes) * 100 : 0
 
   const rankDisplay = rank <= 3 ? (
-    <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
-      rank === 1 ? "bg-yellow-500 text-white" :
+    <div className={`flex h-8 w-8 items-center justify-center rounded-full ${rank === 1 ? "bg-yellow-500 text-white" :
       rank === 2 ? "bg-gray-400 text-white" :
-      "bg-amber-700 text-white"
-    }`}>
+        "bg-amber-700 text-white"
+      }`}>
       <Trophy className="h-4 w-4" />
     </div>
   ) : (
