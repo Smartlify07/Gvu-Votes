@@ -6,6 +6,7 @@ import { PodiumTopThree } from "@/features/leaderboard/components/podium-top-thr
 import { FilterTabs } from "@/features/leaderboard/components/filter-tabs"
 import { LeaderboardList } from "@/features/leaderboard/components/leaderboard-list"
 import { Navbar } from "@/components/navbar"
+import { Spinner } from "@/components/ui/spinner"
 
 export const Route = createFileRoute("/leaderboard")({
   component: LeaderboardPage,
@@ -39,7 +40,7 @@ function LeaderboardPage() {
         {/* Leaderboard List */}
         {isPending ? (
           <div className="flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-current border-t-transparent" />
+            <Spinner />
           </div>
         ) : (
           <LeaderboardList contestants={contestants} category={selectedCategory} />
