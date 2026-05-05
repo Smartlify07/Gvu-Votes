@@ -25,6 +25,10 @@ function App() {
   const scrollToContestants = () => {
     document.getElementById("contestants")?.scrollIntoView({ behavior: "smooth" })
   }
+  const categories = [
+    { label: "All", value: "All" },
+    ...CATEGORIES,
+  ]
 
   return (
     <div className="min-h-screen">
@@ -95,7 +99,7 @@ function App() {
 
           {/* Filter Pills */}
           <div className="flex flex-wrap justify-center gap-2">
-            {CATEGORIES.map((category) => (
+            {categories.map((category) => (
               <Button
                 key={category.value}
                 variant={selectedCategory === category.value ? "default" : "outline"}
