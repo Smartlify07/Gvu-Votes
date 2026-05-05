@@ -109,7 +109,6 @@ export function RegisterForm() {
     resolver: zodResolver(formSchema) as any,
   })
 
-  console.log(errors)
 
   useEffect(() => {
     return () => {
@@ -193,7 +192,6 @@ export function RegisterForm() {
       thumbnailUrl = publicUrlData.publicUrl
     }
 
-    console.log(user?.id)
     try {
       await mutateAsync(
         {

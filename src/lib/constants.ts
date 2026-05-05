@@ -14,7 +14,7 @@ const CATEGORIES = [
     { label: "Best dressed male", value: "Best dressed male" },
     { label: "Most Popular Student", value: "Most Popular Student" },
     { label: "Sportsman of the Year", value: "Sportsman of the Year" },
-    { label: "Content Creator of the Year", value: "Content Creator of the Year" },
+    { label: "Creative of the Year", value: "Creative of the Year" },
 ]
 
 const VOTING_END_TIME = new Date("2026-05-08T12:00:00")
