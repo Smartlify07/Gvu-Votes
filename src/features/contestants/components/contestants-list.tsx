@@ -146,7 +146,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                       <Button
                         className={"w-full h-12 text-lg self-end mt-auto"}
                         size={"lg"}
-                        disabled={!user || contestant.votes?.some(v => v.voter_id === user.id)}
+                        disabled={contestant.votes?.some(v => v.voter_id === user?.id)}
                         onClick={() => {
                           if (!isAuthenticated) {
                             setShowAuthDialog(true)
