@@ -1,5 +1,7 @@
 import { type ContestantWithVotes } from "@/features/contestants/api"
 import { Trophy } from "lucide-react"
+import { Link } from "@tanstack/react-router"
+import { buttonVariants } from "@/components/ui/button"
 
 export type LeaderboardItemProps = {
   contestant: ContestantWithVotes
@@ -89,6 +91,9 @@ export function LeaderboardList({ contestants, category }: LeaderboardListProps)
         <p className="text-sm text-muted-foreground">
           Be the first to register for {category}!
         </p>
+        <Link to="/register" className={buttonVariants()}>
+          Register Now
+        </Link>
       </div>
     )
   }
