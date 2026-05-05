@@ -75,11 +75,6 @@ const formSchema = z.object({
       error: "Input must not be empty",
     })
     .min(1, "Select a category"),
-  position: z
-    .string({
-      error: "Input must not be empty",
-    })
-    .min(1, "Select a position"),
   bio: z
     .string({
       error: "Input must not be empty",
@@ -113,6 +108,8 @@ export function RegisterForm() {
   } = useForm<FormData>({
     resolver: zodResolver(formSchema) as any,
   })
+
+  console.log(errors)
 
   useEffect(() => {
     return () => {
@@ -205,7 +202,6 @@ export function RegisterForm() {
           email: data.email,
           department: data.department,
           category_id: data.category_id,
-          position: data.position,
           avatarUrl: thumbnailUrl,
           bio: data.bio,
           user_id: user?.id ?? ""

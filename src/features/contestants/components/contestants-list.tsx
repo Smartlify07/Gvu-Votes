@@ -35,11 +35,22 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
     if (!user) return
 
     try {
-      await voteMutation.mutateAsync({ contestant_id: contestant.id, voter_id: user.id })
-      toast.success(`Voted for ${contestant.name}`)
+      await voteMutation.mutateAsync({ contestant_id: contestant.id, voter_id: user.id }, {
+        onSuccess: () => {
+          toast.success(`Voted for ${contestant.name}`)
+
+        },
+        onError: (error: any) => {
+          if (error?.message.includes("duplicate key value violates unique constraint") || error?.code === "23505") {
+            toast.error("You can't vote for another person in this category")
+          }
+          else {
+            toast.error("An error occurred trying to vote")
+          }
+        }
+      })
     } catch (error: unknown) {
       console.error(error)
-      toast.error("An error occurred, try voting again")
     }
   }
 

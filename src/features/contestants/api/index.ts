@@ -13,7 +13,6 @@ export type ContestantPayload = {
   email: string
   department: string
   category_id: string
-  position: string
   avatarUrl: string
   bio: string
   user_id: string;
