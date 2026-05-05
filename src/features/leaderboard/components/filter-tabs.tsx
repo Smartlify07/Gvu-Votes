@@ -1,15 +1,7 @@
 import { Button } from "@/components/ui/button"
+import { CATEGORIES } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 
-const categories = [
-  "All",
-  "Mr Gvu",
-  "Miss GVU",
-  "Best Ebony Male",
-  "Best Ebony Female",
-  "Best dressed",
-  "Pageantry",
-]
 
 export type FilterTabsProps = {
   selectedCategory: string
@@ -19,15 +11,15 @@ export type FilterTabsProps = {
 export function FilterTabs({ selectedCategory, onSelectCategory }: FilterTabsProps) {
   return (
     <section className="flex flex-wrap justify-center gap-2">
-      {categories.map((category) => (
+      {CATEGORIES.map((category) => (
         <Button
-          key={category}
-          variant={selectedCategory === category ? "default" : "outline"}
+          key={category.value}
+          variant={selectedCategory === category.value ? "default" : "outline"}
           size="sm"
-          onClick={() => onSelectCategory(category)}
+          onClick={() => onSelectCategory(category.value)}
           className={cn("rounded-full")}
         >
-          {category}
+          {category.label}
         </Button>
       ))}
     </section>

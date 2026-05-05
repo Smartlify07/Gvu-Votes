@@ -5,18 +5,18 @@ const DEPARTMENTS = [
     "Economics",
 ]
 
-const POSITIONS = [
-    "Mr Gvu",
-    "Miss GVU",
-    "Ebony of the year Male",
-    "Ebony of the year Female",
-    "Best dressed female",
-    "Best dressed male",
-    "Most Popular Student",
-    "Sportsman of the Year",
-    "Content Creator of the Year"
+const CATEGORIES = [
+    { label: "Mr GVU", value: "Mr GVU" },
+    { label: "Miss GVU", value: "Miss GVU" },
+    { label: "Ebony of the year Male", value: "Ebony of the year Male" },
+    { label: "Ebony of the year Female", value: "Ebony of the year Female" },
+    { label: "Best dressed female", value: "Best dressed female" },
+    { label: "Best dressed male", value: "Best dressed male" },
+    { label: "Most Popular Student", value: "Most Popular Student" },
+    { label: "Sportsman of the Year", value: "Sportsman of the Year" },
+    { label: "Content Creator of the Year", value: "Content Creator of the Year" },
 ]
 
 const VOTING_END_TIME = new Date("2026-05-20T23:59:59")
 
-export { DEPARTMENTS, POSITIONS, VOTING_END_TIME }
+export { DEPARTMENTS, CATEGORIES, VOTING_END_TIME }

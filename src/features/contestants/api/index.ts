@@ -8,6 +8,7 @@ export type ContestantPayload = {
   position: string
   avatarUrl: string
   bio: string
+  user_id: string;
 }
 
 export type VotePayload = {
@@ -49,11 +50,10 @@ export async function getContestants() {
   }
 }
 
-export async function addContestant(values: ContestantPayload, userId?: string) {
+export async function addContestant(values: ContestantPayload,) {
   try {
     const { data, error } = await supabase.from("contestants").insert({
       ...values,
-      user_id: userId,
     })
     if (error) {
       console.error(error)
@@ -101,6 +101,42 @@ export async function updateContestantBio(contestantId: string, bio: string) {
     const { data, error } = await supabase
       .from("contestants")
       .update({ bio })
+      .eq("id", contestantId)
+    if (error) {
+      console.error(error)
+      throw error
+    }
+    return data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export async function getContestantById(contestantId: string) {
+  try {
+    const { data, error } = await supabase
+      .from("contestants")
+      .select("*")
+      .eq("id", contestantId)
+      .returns<ContestantWithVotes[]>()
+      .single()
+    if (error) {
+      console.error(error)
+      throw error
+    }
+    return data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export async function updateContestant(contestantId: string, values: Partial<ContestantPayload>) {
+  try {
+    const { data, error } = await supabase
+      .from("contestants")
+      .update(values)
       .eq("id", contestantId)
     if (error) {
       console.error(error)

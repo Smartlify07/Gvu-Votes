@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -18,7 +18,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Field,
@@ -31,14 +30,14 @@ import {
 } from "@/components/ui/field"
 import { toast } from "sonner"
 import { useNavigate } from "@tanstack/react-router"
-import { CheckCircle2, Loader2, Upload, User, Award, ImageIcon } from "lucide-react"
-import { useContestantMutation } from "../hooks"
-import { supabase, signInWithGoogle } from "@/lib/supabase"
+import { Loader2, Upload, User, Award, ImageIcon } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 import { Spinner } from "@/components/ui/spinner"
 import { DEPARTMENTS, CATEGORIES } from "@/lib/constants"
-import { useAuth } from "@/contexts/auth-provider"
+import { type ContestantWithVotes } from "../api"
+import { Link } from "@tanstack/react-router"
 
-const MAX_FILE_SIZE = 10000000 // 10MB
+const MAX_FILE_SIZE = 10000000
 const DEBOUNCE_DELAY = 500
 
 const formSchema = z.object({
@@ -85,25 +84,25 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-
-
-export function RegisterForm() {
+export function EditContestantForm({ contestantId }: { contestantId: string }) {
   const navigate = useNavigate()
-  const { mutateAsync, isPending } = useContestantMutation()
-  const { user, isAuthenticated } = useAuth()
-  const [showAuthDialog, setShowAuthDialog] = useState(false)
+  const [isPending, setIsPending] = useState(false)
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false)
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [fileValue, setFileValue] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [initialData, setInitialData] = useState<ContestantWithVotes | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const cleanupRef = useRef<(() => void) | null>(null)
 
   const {
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     control,
     setValue,
+    reset,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema) as any,
   })
@@ -121,7 +120,6 @@ export function RegisterForm() {
 
   useEffect(() => {
     if (!fileValue) {
-      setUploadedUrl(null)
       setUploadError(null)
       return
     }
@@ -158,13 +156,43 @@ export function RegisterForm() {
     }
   }, [fileValue])
 
-  const onSubmit = async (data: FormData) => {
-    if (!isAuthenticated) {
-      setShowAuthDialog(true)
-      return
+  useEffect(() => {
+    const fetchContestant = async () => {
+      if (initialData || !isLoading) return
+      
+      const { data, error } = await supabase
+        .from("contestants")
+        .select("*")
+        .eq("id", contestantId)
+        .single()
+      
+      if (error) {
+        console.error(error)
+        toast.error("Failed to load contestant")
+        setIsLoading(false)
+        return
+      }
+      
+      setInitialData(data)
+      setUploadedUrl(data.avatarUrl)
+      reset({
+        name: data.name,
+        matriculationNumber: data.matriculationNumber,
+        email: data.email,
+        department: data.department,
+        position: data.position,
+        bio: data.bio,
+        thumbnail: data.avatarUrl,
+      })
+      setIsLoading(false)
     }
 
-    let thumbnailUrl = uploadedUrl || (data.thumbnail instanceof File ? "" : data.thumbnail || "")
+    fetchContestant()
+  }, [contestantId, initialData, isLoading, reset])
+
+  const onSubmit = async (data: FormData) => {
+    setIsPending(true)
+    let thumbnailUrl = uploadedUrl || ""
 
     if (data.thumbnail instanceof File && !uploadedUrl) {
       setIsUploading(true)
@@ -180,6 +208,7 @@ export function RegisterForm() {
 
       if (uploadError) {
         toast.error("Failed to upload image")
+        setIsPending(false)
         return
       }
 
@@ -190,45 +219,54 @@ export function RegisterForm() {
       thumbnailUrl = publicUrlData.publicUrl
     }
 
-    console.log(user?.id)
     try {
-      await mutateAsync(
-        {
+      const { error } = await supabase
+        .from("contestants")
+        .update({
           name: data.name,
           matriculationNumber: data.matriculationNumber,
           email: data.email,
           department: data.department,
           position: data.position,
-          avatarUrl: thumbnailUrl,
           bio: data.bio,
-          user_id: user?.id ?? ""
-        },
-        {
-          onError: (error: any) => {
-            if (
-              error?.code === "23505" ||
-              error?.message?.includes("duplicate key") ||
-              error?.message?.includes("unique constraint")
-            ) {
-              toast.error("You have already registered with this matriculation number or email.")
-            } else {
-              toast.error("Registration failed. Please try again.")
-            }
-          },
-          onSuccess: () => {
-            toast.success("Registration successful!")
-            navigate({ to: "/" })
-          },
-        }
-      )
-    } catch {
-      // Error already handled in onError
+          avatarUrl: thumbnailUrl,
+        })
+        .eq("id", contestantId)
+
+      if (error) {
+        console.error(error)
+        toast.error("Failed to update contestant")
+        return
+      }
+
+      toast.success("Contestant updated successfully!")
+      navigate({ to: "/" })
+    } catch (error) {
+      console.error(error)
+      toast.error("Failed to update contestant")
+    } finally {
+      setIsPending(false)
     }
+  }
+
+  const handleCancel = () => {
+    if (isDirty) {
+      setShowDiscardDialog(true)
+    } else {
+      navigate({ to: "/" })
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Spinner />
+      </div>
+    )
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
-      {/* Personal Info Section */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-2 text-lg font-medium">
           <User className="h-5 w-5" />
@@ -250,6 +288,8 @@ export function RegisterForm() {
                     placeholder="Enter matric number"
                     aria-invalid={fieldState.invalid}
                     className="text-sm"
+                    disabled
+
                   />
 
                   {fieldState.invalid && (
@@ -301,6 +341,7 @@ export function RegisterForm() {
                     placeholder="Enter your email address"
                     aria-invalid={fieldState.invalid}
                     className="text-sm"
+                    disabled
                   />
 
                   {fieldState.invalid && (
@@ -320,7 +361,7 @@ export function RegisterForm() {
                   Department <span className="text-destructive">*</span>
                 </FieldLabel>
                 <FieldContent>
-                  <Select name={field.name} onValueChange={field.onChange}>
+                  <Select name={field.name} onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger
                       className="w-full"
                       aria-invalid={fieldState.invalid}
@@ -346,7 +387,6 @@ export function RegisterForm() {
         </div>
       </section>
 
-      {/* Contestant Details Section */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-2 text-lg font-medium">
           <Award className="h-5 w-5" />
@@ -363,7 +403,7 @@ export function RegisterForm() {
                     Position Running For <span className="text-destructive">*</span>
                   </FieldLabel>
                   <FieldContent className="">
-                    <Select name={field.name} onValueChange={field.onChange}>
+                    <Select name={field.name} onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger
                         aria-invalid={fieldState.invalid}
                         className="w-full"
@@ -417,7 +457,6 @@ export function RegisterForm() {
         </FieldGroup>
       </section>
 
-      {/* Image Section */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-2 text-lg font-medium">
           <ImageIcon className="h-5 w-5" />
@@ -459,11 +498,11 @@ export function RegisterForm() {
                     className="h-full w-full object-contain rounded-lg"
                   />
                 ) : uploadedUrl ? (
-                  <>
-                    <CheckCircle2 className="h-10 w-10 text-green-600" />
-                    <p className="text-sm text-green-600">Uploaded</p>
-                    <p className="text-xs text-muted-foreground">{fileValue?.name}</p>
-                  </>
+                  <img
+                    src={uploadedUrl}
+                    alt="Current profile"
+                    className="h-full w-full object-contain rounded-lg"
+                  />
                 ) : (
                   <>
                     <Upload className="h-10 w-10 text-muted-foreground" />
@@ -490,47 +529,43 @@ export function RegisterForm() {
         />
       </section>
 
-      {/* Submit Button */}
-      <Button type="submit" className="w-full" disabled={isPending || isUploading}>
-        {isPending ? (
-          <>
-            <Spinner />
-            Registering...
-          </>
-        ) : (
-          "Register"
-        )}
-      </Button>
+      <div className="flex gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          className="flex-1"
+          onClick={handleCancel}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" className="flex-1" disabled={isPending || isUploading}>
+          {isPending ? (
+            <>
+              <Spinner />
+              Saving...
+            </>
+          ) : (
+            "Save Changes"
+          )}
+        </Button>
+      </div>
 
-      {/* Sign In Dialog */}
-      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-        <DialogContent className="p-8 gap-10 max-w-lg!">
+      <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <DialogContent className="p-6 gap-4">
           <DialogHeader>
-            <DialogTitle className="text-3xl font-medium">Sign in to Register</DialogTitle>
-            <DialogDescription className="text-base">You need to sign in to register as a contestant</DialogDescription>
+            <DialogTitle>Discard Changes?</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes. Are you sure you want to leave?
+            </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-6">
-            <Button
-              size={"lg"}
-              className={"text-base"}
-              variant="outline"
-              onClick={async () => {
-                try {
-                  await signInWithGoogle()
-                } catch (error) {
-                  console.error("Sign in error:", error)
-                  toast.error("Failed to sign in with Google")
-                }
-              }}
-            >
-              <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#4285F4" d="M14.9 8.161c0-.476-.039-.954-.121-1.422h-6.64v2.695h3.802a3.24 3.24 0 01-1.407 2.127v1.75h2.269c1.332-1.22 2.097-3.02 2.097-5.15z"></path><path fill="#34A853" d="M8.14 15c1.898 0 3.499-.62 4.665-1.69l-2.268-1.749c-.631.427-1.446.669-2.395.669-1.836 0-3.393-1.232-3.952-2.888H1.85v1.803A7.044 7.044 0 008.14 15z"></path><path fill="#FBBC04" d="M4.187 9.342a4.17 4.17 0 010-2.68V4.859H1.849a6.97 6.97 0 000 6.286l2.338-1.803z"></path><path fill="#EA4335" d="M8.14 3.77a3.837 3.837 0 012.7 1.05l2.01-1.999a6.786 6.786 0 00-4.71-1.82 7.042 7.042 0 00-6.29 3.858L4.186 6.66c.556-1.658 2.116-2.89 3.952-2.89z"></path></g></svg>
-              Sign in with Google
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowDiscardDialog(false)}>
+              Keep Editing
             </Button>
-            <DialogTrigger>
-              <Button variant={"link"} onClick={() => setShowAuthDialog(false)}>Maybe later</Button>
-            </DialogTrigger>
+            <Link to="/" className={buttonVariants()}>
+              Discard
+            </Link>
           </div>
-          <p className="text-xs text-center text-muted-foreground">Sign in required to register as a contestant</p>
         </DialogContent>
       </Dialog>
     </form>

@@ -26,7 +26,7 @@ export function useContestants() {
 export function useContestantMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (variables: ContestantPayload, userId?: string) => addContestant(variables, userId),
+    mutationFn: (variables: ContestantPayload) => addContestant(variables),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
     },
