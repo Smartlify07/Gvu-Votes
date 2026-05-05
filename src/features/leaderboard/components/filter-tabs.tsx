@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { CATEGORIES } from "@/lib/constants"
+import { useCategories } from "@/features/contestants/hooks"
 import { cn } from "@/lib/utils"
 
 
@@ -9,14 +9,16 @@ export type FilterTabsProps = {
 }
 
 export function FilterTabs({ selectedCategory, onSelectCategory }: FilterTabsProps) {
+  const { data: categories } = useCategories()
+  
   return (
     <section className="flex flex-wrap justify-center gap-2">
-      {CATEGORIES.map((category) => (
+      {categories?.map((category) => (
         <Button
-          key={category.value}
-          variant={selectedCategory === category.value ? "default" : "outline"}
+          key={category.id}
+          variant={selectedCategory === category.id ? "default" : "outline"}
           size="sm"
-          onClick={() => onSelectCategory(category.value)}
+          onClick={() => onSelectCategory(category.id)}
           className={cn("rounded-full")}
         >
           {category.label}

@@ -33,7 +33,8 @@ import { useNavigate } from "@tanstack/react-router"
 import { Loader2, Upload, User, Award, ImageIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Spinner } from "@/components/ui/spinner"
-import { DEPARTMENTS, CATEGORIES } from "@/lib/constants"
+import { useCategories } from "../hooks"
+import { DEPARTMENTS } from "@/lib/constants"
 import { type ContestantWithVotes } from "../api"
 import { Link } from "@tanstack/react-router"
 
@@ -69,11 +70,11 @@ const formSchema = z.object({
       error: "Input must not be empty",
     })
     .min(1, "Select a department"),
-  position: z
+  category_id: z
     .string({
       error: "Input must not be empty",
     })
-    .min(1, "Select a position"),
+    .min(1, "Select a category"),
   bio: z
     .string({
       error: "Input must not be empty",
@@ -86,6 +87,7 @@ type FormData = z.infer<typeof formSchema>
 
 export function EditContestantForm({ contestantId }: { contestantId: string }) {
   const navigate = useNavigate()
+  const { data: categories } = useCategories()
   const [isPending, setIsPending] = useState(false)
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
@@ -180,7 +182,7 @@ export function EditContestantForm({ contestantId }: { contestantId: string }) {
         matriculationNumber: data.matriculationNumber,
         email: data.email,
         department: data.department,
-        position: data.position,
+        category_id: data.category_id,
         bio: data.bio,
         thumbnail: data.avatarUrl,
       })
@@ -227,7 +229,7 @@ export function EditContestantForm({ contestantId }: { contestantId: string }) {
           matriculationNumber: data.matriculationNumber,
           email: data.email,
           department: data.department,
-          position: data.position,
+          category_id: data.category_id,
           bio: data.bio,
           avatarUrl: thumbnailUrl,
         })
@@ -395,33 +397,33 @@ export function EditContestantForm({ contestantId }: { contestantId: string }) {
         <FieldGroup>
           <FieldSet>
             <Controller
-              name="position"
+              name="category_id"
               control={control}
               render={({ fieldState, field }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="position">
-                    Position Running For <span className="text-destructive">*</span>
+                  <FieldLabel htmlFor="category_id">
+                    Category <span className="text-destructive">*</span>
                   </FieldLabel>
                   <FieldContent className="">
                     <Select name={field.name} onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger
                         aria-invalid={fieldState.invalid}
                         className="w-full"
-                        id="position"
+                        id="category_id"
                       >
-                        <SelectValue placeholder="Select position" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.map((p) => (
-                          <SelectItem key={p.value} value={p.value}>
+                        {categories?.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
                             {p.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.position && (
+                    {errors.category_id && (
                       <FieldDescription className="text-destructive">
-                        {errors.position.message}
+                        {errors.category_id.message}
                       </FieldDescription>
                     )}
                   </FieldContent>

@@ -35,11 +35,22 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
     if (!user) return
 
     try {
-      await voteMutation.mutateAsync({ contestant_id: contestant.id, voter_id: user.id })
-      toast.success(`Voted for ${contestant.name}`)
+      await voteMutation.mutateAsync({ contestant_id: contestant.id, voter_id: user.id }, {
+        onSuccess: () => {
+          toast.success(`Voted for ${contestant.name}`)
+
+        },
+        onError: (error: any) => {
+          if (error?.message.includes("duplicate key value violates unique constraint") || error?.code === "23505") {
+            toast.error("You can't vote for another person in this category")
+          }
+          else {
+            toast.error("An error occurred trying to vote")
+          }
+        }
+      })
     } catch (error: unknown) {
       console.error(error)
-      toast.error("An error occurred, try voting again")
     }
   }
 
@@ -74,7 +85,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-10">
-      {(!data?.filter((c) => category === "All" || c.position === category).length) ? (
+      {(!data?.filter((c) => category === "All" || c.category_id === category).length) ? (
         <div className="col-span-full flex flex-col items-center justify-center gap-4 py-16 text-center">
           <UsersRound className="h-16 w-16 text-muted-foreground/50" />
           <div className="flex flex-col gap-2">
@@ -90,7 +101,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
       ) : (
         <>
           {data
-            ?.filter((c) => category === "All" || c.position === category)
+            ?.filter((c) => category === "All" || c.category_id === category)
             .map((contestant) => {
 
 
