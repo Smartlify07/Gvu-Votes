@@ -60,12 +60,11 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
           schema: "public",
           table: "votes",
         },
-        (data) => {
-          console.log("New record", data.new)
+        () => {
           queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
         }
       )
-      .subscribe((status) => console.log("realtime status", status))
+      .subscribe()
     return () => {
       supabase.removeChannel(channel)
     }

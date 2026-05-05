@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { useContestants } from "@/features/contestants/hooks"
-import { useState } from "react"
+import { useContestants, CONTESTANTS_QUERY_KEY } from "@/features/contestants/hooks"
+import { useState, useEffect } from "react"
 import { TitleSection } from "@/features/leaderboard/components/title-section"
 import { PodiumTopThree } from "@/features/leaderboard/components/podium-top-three"
 import { FilterTabs } from "@/features/leaderboard/components/filter-tabs"
 import { LeaderboardList } from "@/features/leaderboard/components/leaderboard-list"
 import { Navbar } from "@/components/navbar"
 import { Spinner } from "@/components/ui/spinner"
+import { supabase } from "@/lib/supabase"
+import { useQueryClient } from "@tanstack/react-query"
 
 export const Route = createFileRoute("/leaderboard")({
   component: LeaderboardPage,
@@ -15,8 +17,29 @@ export const Route = createFileRoute("/leaderboard")({
 function LeaderboardPage() {
   const { data, isPending } = useContestants()
   const [selectedCategory, setSelectedCategory] = useState("All")
+  const queryClient = useQueryClient()
 
   const contestants = data ?? []
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("leaderboard-votes-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "votes",
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
+        }
+      )
+      .subscribe()
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [queryClient])
 
   return (
     <div className="min-h-screen">
