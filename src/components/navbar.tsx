@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState } from "react"
 import { Menu, X } from "lucide-react"
-import { signOut } from "@/lib/supabase"
+import { signOut, signInWithGoogle } from "@/lib/supabase"
 import { toast } from "sonner"
 
 export function Navbar({ className }: { className?: string }) {
@@ -19,6 +19,15 @@ export function Navbar({ className }: { className?: string }) {
     } catch (error) {
       console.error("Sign out error:", error)
       toast.error("Failed to sign out")
+    }
+  }
+
+  const handleSignIn = async () => {
+    try {
+      await signInWithGoogle()
+    } catch (error) {
+      console.error("Sign in error:", error)
+      toast.error("Failed to sign in with Google")
     }
   }
 
@@ -45,9 +54,9 @@ export function Navbar({ className }: { className?: string }) {
             <AvatarFallback>{user.user_metadata.full_name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
           </Avatar>
         ) : (
-          <Link to="/" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+          <button onClick={handleSignIn} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
             Sign In
-          </Link>
+          </button>
         )}
       </div>
 
@@ -80,9 +89,9 @@ export function Navbar({ className }: { className?: string }) {
                 </button>
               </>
             ) : (
-              <Link to="/" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))} onClick={() => setIsOpen(false)}>
+              <button onClick={() => { handleSignIn(); setIsOpen(false); }} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
                 Sign In
-              </Link>
+              </button>
             )}
           </div>
         </div>
