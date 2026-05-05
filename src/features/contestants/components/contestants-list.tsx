@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { CONTESTANTS_QUERY_KEY, useContestants, useVoteMutation } from "../hooks"
+import { CONTESTANTS_QUERY_KEY, useCategories, useContestants, useVoteMutation } from "../hooks"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useEffect, useState } from "react"
 import { type ContestantWithVotes } from "../api"
@@ -30,6 +30,8 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
   const { isAuthenticated, user } = useAuth()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const queryClient = useQueryClient()
+  const { data: categories } = useCategories()
+  const actualCategory = category === "All" ? "All" : categories?.find((category_) => category_.id === category)?.label
 
   const handleVote = async (contestant: ContestantWithVotes) => {
     if (!user) return
@@ -91,7 +93,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
           <div className="flex flex-col gap-2">
             <h3 className="text-lg font-medium">No contestants yet</h3>
             <p className="text-sm text-muted-foreground">
-              Be the first to register for {category === "All" ? "this position" : category}!
+              Be the first to register for {category === "All" ? "this position" : actualCategory}!
             </p>
             <Link to="/register" className={cn(buttonVariants({
               variant: "default", size: "lg"
@@ -155,7 +157,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                       </div>
 
                       <Button
-                        className={"w-full h-12 text-lg self-end mt-auto"}
+                        className={"w-full h-12 text-lg self-end mt-auto truncate"}
                         size={"lg"}
                         disabled={contestant.votes?.some(v => v.voter_id === user?.id)}
                         onClick={() => {
