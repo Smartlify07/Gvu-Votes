@@ -108,7 +108,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                     />
                   </div>
                   <CardHeader className="flex flex-col gap-2">
-                    <div className="flex items-center w-full justify-between ">
+                    <div className="flex flex-wrap items-center w-full justify-between ">
                       <div className="gap flex flex-col">
                         <CardTitle className="text-xl truncate max-w-60">{contestant.name}</CardTitle>
                         <CardDescription>{contestant.department}</CardDescription>
