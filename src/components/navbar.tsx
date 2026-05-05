@@ -50,10 +50,15 @@ export function Navbar({ className }: { className?: string }) {
 
       <div className="hidden md:flex items-center justify-end">
         {isAuthenticated && user ? (
-          <Avatar className="size-9">
-            <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
-            <AvatarFallback>{user.user_metadata.full_name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-3">
+            <Avatar className="size-9">
+              <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
+              <AvatarFallback>{user.user_metadata.full_name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <button onClick={handleSignOut} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+              Logout
+            </button>
+          </div>
         ) : (
           <button onClick={handleSignIn} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
             Sign In
