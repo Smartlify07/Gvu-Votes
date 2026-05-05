@@ -8,6 +8,7 @@ export type ContestantPayload = {
   position: string
   avatarUrl: string
   bio: string
+  user_id: string;
 }
 
 export type VotePayload = {
@@ -27,6 +28,7 @@ export type ContestantWithVotes = {
   position: string
   avatarUrl: string
   bio: string
+  user_id: string
   votes_count: number;
   votes: Vote[]
 }
@@ -48,9 +50,11 @@ export async function getContestants() {
   }
 }
 
-export async function addContestant(values: ContestantPayload) {
+export async function addContestant(values: ContestantPayload,) {
   try {
-    const { data, error } = await supabase.from("contestants").insert(values)
+    const { data, error } = await supabase.from("contestants").insert({
+      ...values,
+    })
     if (error) {
       console.error(error)
       throw error
@@ -86,6 +90,78 @@ export async function getContestantVotes(contestantId: string) {
       .select("*", { count: "exact", head: true })
       .eq("contestant_id", contestantId)
     return result
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export async function updateContestantBio(contestantId: string, bio: string) {
+  try {
+    const { data, error } = await supabase
+      .from("contestants")
+      .update({ bio })
+      .eq("id", contestantId)
+    if (error) {
+      console.error(error)
+      throw error
+    }
+    return data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export async function getContestantById(contestantId: string) {
+  try {
+    const { data, error } = await supabase
+      .from("contestants")
+      .select("*")
+      .eq("id", contestantId)
+      .returns<ContestantWithVotes[]>()
+      .single()
+    if (error) {
+      console.error(error)
+      throw error
+    }
+    return data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export async function updateContestant(contestantId: string, values: Partial<ContestantPayload>) {
+  try {
+    const { data, error } = await supabase
+      .from("contestants")
+      .update(values)
+      .eq("id", contestantId)
+    if (error) {
+      console.error(error)
+      throw error
+    }
+    return data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export async function checkUserVoted(voterId: string, contestantId: string) {
+  try {
+    const { data, error } = await supabase
+      .from("votes")
+      .select("id")
+      .eq("voter_id", voterId)
+      .eq("contestant_id", contestantId)
+      .maybeSingle()
+    if (error) {
+      console.error(error)
+      throw error
+    }
+    return !!data
   } catch (error) {
     console.error(error)
     throw error

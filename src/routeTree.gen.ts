@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ContestantsIdEditRouteImport } from './routes/contestants/$id/edit'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContestantsIdEditRoute = ContestantsIdEditRouteImport.update({
+  id: '/contestants/$id/edit',
+  path: '/contestants/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/leaderboard': typeof LeaderboardRoute
   '/register': typeof RegisterRoute
+  '/contestants/$id/edit': typeof ContestantsIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/leaderboard': typeof LeaderboardRoute
   '/register': typeof RegisterRoute
+  '/contestants/$id/edit': typeof ContestantsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/leaderboard': typeof LeaderboardRoute
   '/register': typeof RegisterRoute
+  '/contestants/$id/edit': typeof ContestantsIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/leaderboard' | '/register'
+  fullPaths: '/' | '/leaderboard' | '/register' | '/contestants/$id/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/leaderboard' | '/register'
-  id: '__root__' | '/' | '/leaderboard' | '/register'
+  to: '/' | '/leaderboard' | '/register' | '/contestants/$id/edit'
+  id: '__root__' | '/' | '/leaderboard' | '/register' | '/contestants/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LeaderboardRoute: typeof LeaderboardRoute
   RegisterRoute: typeof RegisterRoute
+  ContestantsIdEditRoute: typeof ContestantsIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contestants/$id/edit': {
+      id: '/contestants/$id/edit'
+      path: '/contestants/$id/edit'
+      fullPath: '/contestants/$id/edit'
+      preLoaderRoute: typeof ContestantsIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LeaderboardRoute: LeaderboardRoute,
   RegisterRoute: RegisterRoute,
+  ContestantsIdEditRoute: ContestantsIdEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
