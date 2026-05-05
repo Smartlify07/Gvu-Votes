@@ -7,18 +7,9 @@ import { Trophy, Users, Vote, ArrowRight, Crown, Sparkles } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Navbar } from "@/components/navbar"
+import { CATEGORIES } from "@/lib/constants"
 
 export const Route = createFileRoute("/")({ component: App })
-
-const categories = [
-  { label: "All", value: "All" },
-  { label: "Mr GVU", value: "Mr Gvu" },
-  { label: "Miss GVU", value: "Miss GVU" },
-  { label: "Best Ebony Male", value: "Best Ebony Male" },
-  { label: "Best Ebony Female", value: "Best Ebony Female" },
-  { label: "Best dressed", value: "Best dressed" },
-  { label: "Pageantry", value: "Pageantry" },
-]
 
 function App() {
   const { data: contestantsData, isPending } = useContestants()
@@ -104,7 +95,7 @@ function App() {
 
           {/* Filter Pills */}
           <div className="flex flex-wrap justify-center gap-2">
-            {categories.map((category) => (
+            {CATEGORIES.map((category) => (
               <Button
                 key={category.value}
                 variant={selectedCategory === category.value ? "default" : "outline"}

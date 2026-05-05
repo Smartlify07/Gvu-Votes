@@ -6,6 +6,7 @@ const DEPARTMENTS = [
 ]
 
 const CATEGORIES = [
+    { label: "All", value: "All" },
     { label: "Mr GVU", value: "Mr GVU" },
     { label: "Miss GVU", value: "Miss GVU" },
     { label: "Ebony of the year Male", value: "Ebony of the year Male" },
