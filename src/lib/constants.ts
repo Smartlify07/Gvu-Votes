@@ -17,6 +17,6 @@ const CATEGORIES = [
     { label: "Content Creator of the Year", value: "Content Creator of the Year" },
 ]
 
-const VOTING_END_TIME = new Date("2026-05-20T23:59:59")
+const VOTING_END_TIME = new Date("2026-05-08T12:00:00")
 
 export { DEPARTMENTS, CATEGORIES, VOTING_END_TIME }
