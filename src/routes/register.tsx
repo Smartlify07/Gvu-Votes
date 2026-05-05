@@ -8,10 +8,10 @@ export const Route = createFileRoute("/register")({
 
 function RegisterPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden">
       <Navbar />
-      <div className="flex min-h-svh items-center justify-center p-4 md:p-12 pt-24">
-        <div className="w-full max-w-2xl">
+      <div className="flex items-center justify-center p-4 md:p-12 pt-24">
+        <div className="lg:max-w-2xl">
           <h1 className="mb-6 text-center text-3xl font-medium">
             Contestant Registration
           </h1>

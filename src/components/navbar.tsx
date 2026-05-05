@@ -7,6 +7,7 @@ import { useState } from "react"
 import { Menu, X } from "lucide-react"
 import { signOut, signInWithGoogle } from "@/lib/supabase"
 import { toast } from "sonner"
+import Logo from "../../public/logo.jpg"
 
 export function Navbar({ className }: { className?: string }) {
   const { user, isAuthenticated } = useAuth()
@@ -34,7 +35,7 @@ export function Navbar({ className }: { className?: string }) {
   return (
     <nav className={cn("fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b bg-background/80 px-6 py-4 backdrop-blur-md", className)}>
       <Link to="/" className="flex items-center gap-2">
-        <img src="../../public/logo.jpg" alt="Gvu Logo" className="size-8" />
+        <img src={Logo} alt="Gvu Logo" className="size-8" />
         <span className="lg:text-xl font-bold">GVU Votes</span>
       </Link>
 
