@@ -370,7 +370,7 @@ export function RegisterForm() {
                         className="w-full"
                         id="category_id"
                       >
-                        <SelectValue placeholder="Select category" />
+                        {categories?.find(c => c.id === field.value)?.label ?? <span className="text-muted-foreground">Select category</span>}
                       </SelectTrigger>
                       <SelectContent>
                         {categories?.map((p) => (
