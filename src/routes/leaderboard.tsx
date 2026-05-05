@@ -16,7 +16,7 @@ function LeaderboardPage() {
   const { data, isPending } = useContestants()
   const [selectedCategory, setSelectedCategory] = useState("All")
 
-  const contestants = data?.data ?? []
+  const contestants = data ?? []
 
   return (
     <div className="min-h-screen">

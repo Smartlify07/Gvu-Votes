@@ -6,7 +6,7 @@ export type PodiumItemProps = {
 }
 
 function PodiumItem({ contestant, rank }: PodiumItemProps) {
-  const voteCount = contestant.votes?.[0]?.count ?? 0
+  const voteCount = contestant.votes_count ?? 0
 
   const podiumWidthClass = rank === 1
     ? "w-32 md:w-40"
@@ -66,7 +66,7 @@ export type PodiumTopThreeProps = {
 
 export function PodiumTopThree({ contestants }: PodiumTopThreeProps) {
   const sorted = [...contestants]
-    .sort((a, b) => (b.votes?.[0]?.count ?? 0) - (a.votes?.[0]?.count ?? 0))
+    .sort((a, b) => (b.votes_count ?? 0) - (a.votes_count ?? 0))
     .slice(0, 3)
 
   if (sorted.length === 0) {

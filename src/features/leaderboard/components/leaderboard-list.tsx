@@ -8,7 +8,7 @@ export type LeaderboardItemProps = {
 }
 
 function LeaderboardItem({ contestant, rank, maxVotes }: LeaderboardItemProps) {
-  const voteCount = contestant.votes?.[0]?.count ?? 0
+  const voteCount = contestant.votes_count ?? 0
   const progressWidth = maxVotes > 0 ? (voteCount / maxVotes) * 100 : 0
 
   const rankDisplay = rank <= 3 ? (
@@ -78,9 +78,9 @@ export function LeaderboardList({ contestants, category }: LeaderboardListProps)
     : contestants.filter((c) => c.position === category)
 
   const sorted = [...filtered]
-    .sort((a, b) => (b.votes?.[0]?.count ?? 0) - (a.votes?.[0]?.count ?? 0))
+    .sort((a, b) => (b.votes_count ?? 0) - (a.votes_count ?? 0))
 
-  const maxVotes = sorted[0]?.votes?.[0]?.count ?? 0
+  const maxVotes = sorted[0]?.votes_count ?? 0
 
   if (sorted.length === 0) {
     return (
