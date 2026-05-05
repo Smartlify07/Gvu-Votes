@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner"
 
 import appCss from "../styles.css?url"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { AuthProvider } from "@/contexts/auth-provider"
 
 export const Route = createRootRoute({
   head: () => ({
@@ -45,19 +46,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          {children}
-          <Toaster />
-          <TanStackDevtools
-            config={{
-              position: "bottom-right",
-            }}
-            plugins={[
-              {
-                name: "Tanstack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
+          <AuthProvider>
+            {children}
+            <Toaster />
+            <TanStackDevtools
+              config={{
+                position: "bottom-right",
+              }}
+              plugins={[
+                {
+                  name: "Tanstack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+              ]}
+            />
+          </AuthProvider>
         </QueryClientProvider>
         <Scripts />
       </body>
