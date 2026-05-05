@@ -24,12 +24,12 @@ function App() {
   const { data: contestantsData, isPending } = useContestants()
   const [selectedCategory, setSelectedCategory] = useState("All")
 
-  const totalContestants = contestantsData?.data?.length ?? 0
-  const totalVotes = contestantsData?.data?.reduce(
-    (sum, c) => sum + (c.votes?.[0]?.count ?? 0),
+  const totalContestants = contestantsData?.length ?? 0
+  const totalVotes = contestantsData?.reduce(
+    (sum, c) => sum + (c.votes_count ?? 0),
     0
   ) ?? 0
-  const totalPositions = new Set(contestantsData?.data?.map((c) => c.position) ?? []).size
+  const totalPositions = new Set(contestantsData?.map((c) => c.position) ?? []).size
 
   const scrollToContestants = () => {
     document.getElementById("contestants")?.scrollIntoView({ behavior: "smooth" })
