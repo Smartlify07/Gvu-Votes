@@ -2,6 +2,7 @@ import { type ContestantWithVotes } from "@/features/contestants/api"
 import { Trophy } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import { buttonVariants } from "@/components/ui/button"
+import { useCategories } from "@/features/contestants/hooks"
 
 export type LeaderboardItemProps = {
   contestant: ContestantWithVotes
@@ -83,13 +84,14 @@ export function LeaderboardList({ contestants, category }: LeaderboardListProps)
     .sort((a, b) => (b.votes_count ?? 0) - (a.votes_count ?? 0))
 
   const maxVotes = sorted[0]?.votes_count ?? 0
-
+  const { data: categories } = useCategories()
+  const foundCategory = categories?.find((cat) => cat.id === category);
   if (sorted.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
         <p className="text-lg font-medium">No contestants yet</p>
         <p className="text-sm text-muted-foreground">
-          Be the first to register for {category}!
+          Be the first to register for {foundCategory?.label}!
         </p>
         <Link to="/register" className={buttonVariants()}>
           Register Now

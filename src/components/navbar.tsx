@@ -44,7 +44,7 @@ export function Navbar({ className }: { className?: string }) {
           Leaderboard
         </Link>
         <Link to="/register" className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")}>
-          Register
+          Become a contestant
         </Link>
       </div>
 
@@ -80,7 +80,7 @@ export function Navbar({ className }: { className?: string }) {
             Leaderboard
           </Link>
           <Link to="/register" className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")} onClick={() => setIsOpen(false)}>
-            Register
+            Become a contestant
           </Link>
           <div className="flex items-center gap-4 border-t pt-4">
             {isAuthenticated && user ? (

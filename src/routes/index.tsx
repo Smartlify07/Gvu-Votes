@@ -2,17 +2,17 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ContestantsList } from "@/features/contestants/components/contestants-list"
-import { useContestants } from "@/features/contestants/hooks"
+import { useCategories, useContestants } from "@/features/contestants/hooks"
 import { Trophy, Users, Vote, ArrowRight, Crown, Sparkles } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Navbar } from "@/components/navbar"
-import { CATEGORIES } from "@/lib/constants"
 
 export const Route = createFileRoute("/")({ component: App })
 
 function App() {
   const { data: contestantsData, isPending } = useContestants()
+  const { data: categories } = useCategories()
   const [selectedCategory, setSelectedCategory] = useState("All")
 
   const totalContestants = contestantsData?.length ?? 0
@@ -25,9 +25,9 @@ function App() {
   const scrollToContestants = () => {
     document.getElementById("contestants")?.scrollIntoView({ behavior: "smooth" })
   }
-  const categories = [
+  const categoryFilters = [
     { label: "All", value: "All" },
-    ...CATEGORIES,
+    ...(categories?.map((c) => ({ label: c.label, value: c.id })) ?? []),
   ]
 
   return (
@@ -99,7 +99,7 @@ function App() {
 
           {/* Filter Pills */}
           <div className="flex flex-wrap justify-center gap-2">
-            {categories.map((category) => (
+            {categoryFilters.map((category) => (
               <Button
                 key={category.value}
                 variant={selectedCategory === category.value ? "default" : "outline"}
