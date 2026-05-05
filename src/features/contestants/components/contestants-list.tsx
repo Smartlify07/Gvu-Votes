@@ -37,14 +37,8 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
         toast.success(`Voted for ${contestant.name}`)
       },
       onError: (error: unknown) => {
-        const err = error as { code?: string; message?: string }
-        const isDuplicate = err.code === "23505" || err.message?.includes("duplicate key value")
-        if (isDuplicate) {
-          toast.error("You've already voted for this contestant")
-        } else {
-          console.error(error)
-          toast.error("An error occurred, try voting again")
-        }
+        console.error(error)
+        toast.error("An error occurred, try voting again")
       }
     })
   }
@@ -131,25 +125,19 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                     </div>
 
 
-                    {(() => {
-                      const hasVoted = user ? contestant.votes?.some(v => v.voter_id === user.id) : false
-                      return (
-                        <Button
-                          className={"w-full h-12 text-lg self-end mt-auto"}
-                          size={"lg"}
-                          disabled={hasVoted}
-                          onClick={() => {
-                            if (!isAuthenticated) {
-                              setShowAuthDialog(true)
-                            } else {
-                              handleVote(contestant)
-                            }
-                          }}
-                        >
-                          {hasVoted ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
-                        </Button>
-                      )
-                    })()}
+                    <Button
+                      className={"w-full h-12 text-lg self-end mt-auto"}
+                      size={"lg"}
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          setShowAuthDialog(true)
+                        } else {
+                          handleVote(contestant)
+                        }
+                      }}
+                    >
+                      Vote for {contestant.name.split(" ")[0]} ⭐
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
