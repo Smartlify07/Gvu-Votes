@@ -85,6 +85,7 @@ export function RegisterForm() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [fileValue, setFileValue] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const cleanupRef = useRef<(() => void) | null>(null)
 
   const {
@@ -100,6 +101,9 @@ export function RegisterForm() {
     return () => {
       if (cleanupRef.current) {
         cleanupRef.current()
+      }
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
       }
     }
   }, [])
@@ -417,6 +421,8 @@ export function RegisterForm() {
                   if (file) {
                     field.onChange(file)
                     setValue("thumbnail", file)
+                    const url = URL.createObjectURL(file)
+                    setPreviewUrl(url)
                   }
                 }}
               />
@@ -428,6 +434,12 @@ export function RegisterForm() {
                   <>
                     <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">Uploading...</p> </>
+                ) : previewUrl ? (
+                  <img 
+                    src={previewUrl} 
+                    alt="Preview" 
+                    className="h-full w-full object-contain rounded-lg"
+                  />
                 ) : uploadedUrl ? (
                   <>
                     <CheckCircle2 className="h-10 w-10 text-green-600" />
