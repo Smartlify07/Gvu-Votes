@@ -4,12 +4,16 @@ import {
   getContestantVotes,
   getContestants,
   submitVote,
+  updateContestantBio,
+  checkUserVoted,
   type ContestantPayload,
   type VotePayload,
 } from "../api"
 
 export const CONTESTANTS_QUERY_KEY = ["contestants"]
 export const VOTES_QUERY_KEY = "votes"
+
+export { checkUserVoted }
 
 export function useContestants() {
   const query = useQuery({
@@ -22,7 +26,7 @@ export function useContestants() {
 export function useContestantMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (variables: ContestantPayload) => addContestant(variables),
+    mutationFn: (variables: ContestantPayload, userId?: string) => addContestant(variables, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
     },
@@ -49,5 +53,20 @@ export function useVoteMutation() {
       queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
     },
 
+  })
+}
+
+export function useUpdateBioMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ contestantId, bio }: { contestantId: string; bio: string }) =>
+      updateContestantBio(contestantId, bio),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
+    },
+    onError: (error) => {
+      console.error(error);
+      throw error
+    }
   })
 }

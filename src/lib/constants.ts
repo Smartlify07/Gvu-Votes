@@ -17,4 +17,6 @@ const POSITIONS = [
     "Content Creator of the Year"
 ]
 
-export { DEPARTMENTS, POSITIONS }
+const VOTING_END_TIME = new Date("2026-05-20T23:59:59")
+
+export { DEPARTMENTS, POSITIONS, VOTING_END_TIME }
