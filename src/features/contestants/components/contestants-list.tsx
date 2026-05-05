@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { CONTESTANTS_QUERY_KEY, useContestants, useVoteMutation, useUpdateBioMutation, checkUserVoted } from "../hooks"
+import { CONTESTANTS_QUERY_KEY, useContestants, useVoteMutation, useUpdateBioMutation } from "../hooks"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useEffect, useState } from "react"
 import { type ContestantWithVotes } from "../api"
@@ -32,15 +32,12 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
   const { isAuthenticated, user } = useAuth()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const queryClient = useQueryClient()
-  const [votedContestantIds, setVotedContestantIds] = useState<Set<string>>(new Set())
   
   const handleVote = async (contestant: ContestantWithVotes) => {
     if (!user) return
-    if (votedContestantIds.has(contestant.id)) return
     
     try {
       await voteMutation.mutateAsync({ contestant_id: contestant.id, voter_id: user.id })
-      setVotedContestantIds(prev => new Set(prev).add(contestant.id))
       toast.success(`Voted for ${contestant.name}`)
     } catch (error: unknown) {
       console.error(error)
@@ -68,19 +65,6 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
       supabase.removeChannel(channel)
     }
   }, [queryClient])
-
-  useEffect(() => {
-    if (!user || !data) return
-    const checkVotes = async () => {
-      const voted = new Set<string>()
-      for (const contestant of data) {
-        const hasVoted = await checkUserVoted(user.id, contestant.id)
-        if (hasVoted) voted.add(contestant.id)
-      }
-      setVotedContestantIds(voted)
-    }
-    checkVotes()
-  }, [user, data])
 
 
   if (isPending) {
@@ -146,25 +130,20 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                         </h1>
                       </div>
 
-                      <div className="flex gap-2">
-                        {isOwnProfile && (
-                          <EditBioDialog contestant={contestant} onUpdate={updateBioMutation.mutateAsync} />
-                        )}
-                        <Button
-                          className={"flex-1 h-12 text-lg"}
-                          size={"lg"}
-                          disabled={hasVoted}
-                          onClick={() => {
-                            if (!isAuthenticated) {
-                              setShowAuthDialog(true)
-                            } else {
-                              handleVote(contestant)
-                            }
-                          }}
-                        >
-                          {hasVoted ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
-                        </Button>
-                      </div>
+                      <Button
+                        className={"w-full h-12 text-lg self-end mt-auto"}
+                        size={"lg"}
+                        disabled={!user || contestant.votes?.some(v => v.voter_id === user.id)}
+                        onClick={() => {
+                          if (!isAuthenticated) {
+                            setShowAuthDialog(true)
+                          } else {
+                            handleVote(contestant)
+                          }
+                        }}
+                      >
+                        {contestant.votes?.some(v => v.voter_id === user?.id) ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
