@@ -77,7 +77,7 @@ export type LeaderboardListProps = {
 export function LeaderboardList({ contestants, category }: LeaderboardListProps) {
   const filtered = category === "All"
     ? contestants
-    : contestants.filter((c) => c.position === category)
+    : contestants.filter((c) => c.category_id === category)
 
   const sorted = [...filtered]
     .sort((a, b) => (b.votes_count ?? 0) - (a.votes_count ?? 0))

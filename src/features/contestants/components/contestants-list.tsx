@@ -74,7 +74,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-10">
-      {(!data?.filter((c) => category === "All" || c.position === category).length) ? (
+      {(!data?.filter((c) => category === "All" || c.category_id === category).length) ? (
         <div className="col-span-full flex flex-col items-center justify-center gap-4 py-16 text-center">
           <UsersRound className="h-16 w-16 text-muted-foreground/50" />
           <div className="flex flex-col gap-2">
@@ -90,7 +90,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
       ) : (
         <>
           {data
-            ?.filter((c) => category === "All" || c.position === category)
+            ?.filter((c) => category === "All" || c.category_id === category)
             .map((contestant) => {
 
 

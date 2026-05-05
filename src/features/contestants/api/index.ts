@@ -1,10 +1,18 @@
 import { supabase } from "@/lib/supabase"
 
+export type Category = {
+  id: string
+  label: string
+  value: string
+  created_at: string
+}
+
 export type ContestantPayload = {
   name: string
   matriculationNumber: string
   email: string
   department: string
+  category_id: string
   position: string
   avatarUrl: string
   bio: string
@@ -25,6 +33,7 @@ export type ContestantWithVotes = {
   matriculationNumber: string
   email: string
   department: string
+  category_id: string
   position: string
   avatarUrl: string
   bio: string
@@ -37,11 +46,12 @@ export async function getContestants() {
   try {
     const result = await supabase
       .from("contestants")
-      .select("*, votes(*)")
-      .returns<ContestantWithVotes[]>()
+      .select("*, votes(*), categories(label)")
+      .returns<(ContestantWithVotes & { categories: { label: string } })[]>()
     const data = result.data?.map(c => ({
       ...c,
-      votes_count: c.votes.length
+      votes_count: c.votes.length,
+      position: c.categories?.label || ""
     }))
     return data ?? []
   } catch (error) {
@@ -162,6 +172,24 @@ export async function checkUserVoted(voterId: string, contestantId: string) {
       throw error
     }
     return !!data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export async function getCategories() {
+  try {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .returns<Category[]>()
+      .order("created_at", { ascending: true })
+    if (error) {
+      console.error(error)
+      throw error
+    }
+    return data ?? []
   } catch (error) {
     console.error(error)
     throw error

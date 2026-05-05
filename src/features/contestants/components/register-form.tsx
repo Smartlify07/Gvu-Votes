@@ -32,10 +32,10 @@ import {
 import { toast } from "sonner"
 import { useNavigate } from "@tanstack/react-router"
 import { CheckCircle2, Loader2, Upload, User, Award, ImageIcon } from "lucide-react"
-import { useContestantMutation } from "../hooks"
+import { useContestantMutation, useCategories } from "../hooks"
 import { supabase, signInWithGoogle } from "@/lib/supabase"
 import { Spinner } from "@/components/ui/spinner"
-import { DEPARTMENTS, CATEGORIES } from "@/lib/constants"
+import { DEPARTMENTS } from "@/lib/constants"
 import { useAuth } from "@/contexts/auth-provider"
 
 const MAX_FILE_SIZE = 10000000 // 10MB
@@ -70,6 +70,11 @@ const formSchema = z.object({
       error: "Input must not be empty",
     })
     .min(1, "Select a department"),
+  category_id: z
+    .string({
+      error: "Input must not be empty",
+    })
+    .min(1, "Select a category"),
   position: z
     .string({
       error: "Input must not be empty",
@@ -90,6 +95,7 @@ type FormData = z.infer<typeof formSchema>
 export function RegisterForm() {
   const navigate = useNavigate()
   const { mutateAsync, isPending } = useContestantMutation()
+  const { data: categories } = useCategories()
   const { user, isAuthenticated } = useAuth()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
@@ -198,6 +204,7 @@ export function RegisterForm() {
           matriculationNumber: data.matriculationNumber,
           email: data.email,
           department: data.department,
+          category_id: data.category_id,
           position: data.position,
           avatarUrl: thumbnailUrl,
           bio: data.bio,
@@ -355,33 +362,33 @@ export function RegisterForm() {
         <FieldGroup>
           <FieldSet>
             <Controller
-              name="position"
+              name="category_id"
               control={control}
               render={({ fieldState, field }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="position">
-                    Position Running For <span className="text-destructive">*</span>
+                  <FieldLabel htmlFor="category_id">
+                    Category <span className="text-destructive">*</span>
                   </FieldLabel>
                   <FieldContent className="">
-                    <Select name={field.name} onValueChange={field.onChange}>
+                    <Select name={field.name} onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger
                         aria-invalid={fieldState.invalid}
                         className="w-full"
-                        id="position"
+                        id="category_id"
                       >
-                        <SelectValue placeholder="Select position" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.map((p) => (
-                          <SelectItem key={p.value} value={p.value}>
+                        {categories?.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
                             {p.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.position && (
+                    {errors.category_id && (
                       <FieldDescription className="text-destructive">
-                        {errors.position.message}
+                        {errors.category_id.message}
                       </FieldDescription>
                     )}
                   </FieldContent>

@@ -3,6 +3,7 @@ import {
   addContestant,
   getContestantVotes,
   getContestants,
+  getCategories,
   submitVote,
   updateContestantBio,
   checkUserVoted,
@@ -11,6 +12,7 @@ import {
 } from "../api"
 
 export const CONTESTANTS_QUERY_KEY = ["contestants"]
+export const CATEGORIES_QUERY_KEY = ["categories"]
 export const VOTES_QUERY_KEY = "votes"
 
 export { checkUserVoted }
@@ -19,6 +21,14 @@ export function useContestants() {
   const query = useQuery({
     queryKey: CONTESTANTS_QUERY_KEY,
     queryFn: () => getContestants(),
+  })
+  return query
+}
+
+export function useCategories() {
+  const query = useQuery({
+    queryKey: CATEGORIES_QUERY_KEY,
+    queryFn: () => getCategories(),
   })
   return query
 }
