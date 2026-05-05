@@ -29,6 +29,7 @@ export function useCategories() {
   const query = useQuery({
     queryKey: CATEGORIES_QUERY_KEY,
     queryFn: () => getCategories(),
+    refetchOnWindowFocus: false,
   })
   return query
 }
