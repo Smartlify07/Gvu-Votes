@@ -27,6 +27,7 @@ import { CheckCircle2, Loader2, Upload, User, Award, ImageIcon } from "lucide-re
 import { useContestantMutation } from "../hooks"
 import { supabase } from "@/lib/supabase"
 import { Spinner } from "@/components/ui/spinner"
+import { DEPARTMENTS, POSITIONS } from "@/lib/constants"
 
 const MAX_FILE_SIZE = 10000000 // 10MB
 const DEBOUNCE_DELAY = 500
@@ -75,20 +76,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-const departments = [
-  "Computer science",
-  "Mass Communication",
-  "Accounting",
-  "Economics",
-]
-const positions = [
-  "Pageantry",
-  "Mr Gvu",
-  "Miss GVU",
-  "Best Ebony Male",
-  "Best Ebony Female",
-  "Best dressed",
-]
+
 
 export function RegisterForm() {
   const navigate = useNavigate()
@@ -319,7 +307,7 @@ export function RegisterForm() {
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      {departments.map((d) => (
+                      {DEPARTMENTS.map((d) => (
                         <SelectItem key={d} value={d}>
                           {d}
                         </SelectItem>
@@ -362,7 +350,7 @@ export function RegisterForm() {
                         <SelectValue placeholder="Select position" />
                       </SelectTrigger>
                       <SelectContent>
-                        {positions.map((p) => (
+                        {POSITIONS.map((p) => (
                           <SelectItem key={p} value={p}>
                             {p}
                           </SelectItem>
