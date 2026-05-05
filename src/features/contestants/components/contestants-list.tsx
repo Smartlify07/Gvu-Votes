@@ -8,17 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { CONTESTANTS_QUERY_KEY, useContestants, useVoteMutation } from "../hooks"
+import { CONTESTANTS_QUERY_KEY, useContestants, useVoteMutation, useUpdateBioMutation, checkUserVoted } from "../hooks"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useEffect, useState } from "react"
 import { type ContestantWithVotes } from "../api"
 import { toast } from "sonner"
-import { UsersRound } from "lucide-react"
+import { UsersRound, Pencil } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import { cn } from "@/lib/utils"
 import { supabase, signInWithGoogle } from "@/lib/supabase"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/contexts/auth-provider"
+import { Textarea } from "@/components/ui/textarea"
 
 export type ContestantsListProps = {
   category?: string
@@ -27,20 +28,24 @@ export type ContestantsListProps = {
 export function ContestantsList({ category = "All" }: ContestantsListProps) {
   const { data, error, isPending } = useContestants()
   const voteMutation = useVoteMutation()
+  const updateBioMutation = useUpdateBioMutation()
   const { isAuthenticated, user } = useAuth()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const queryClient = useQueryClient()
-  const handleVote = (contestant: ContestantWithVotes) => {
+  const [votedContestantIds, setVotedContestantIds] = useState<Set<string>>(new Set())
+  
+  const handleVote = async (contestant: ContestantWithVotes) => {
     if (!user) return
-    voteMutation.mutateAsync({ contestant_id: contestant.id, voter_id: user.id }, {
-      onSuccess: () => {
-        toast.success(`Voted for ${contestant.name}`)
-      },
-      onError: (error: unknown) => {
-        console.error(error)
-        toast.error("An error occurred, try voting again")
-      }
-    })
+    if (votedContestantIds.has(contestant.id)) return
+    
+    try {
+      await voteMutation.mutateAsync({ contestant_id: contestant.id, voter_id: user.id })
+      setVotedContestantIds(prev => new Set(prev).add(contestant.id))
+      toast.success(`Voted for ${contestant.name}`)
+    } catch (error: unknown) {
+      console.error(error)
+      toast.error("An error occurred, try voting again")
+    }
   }
 
 
@@ -63,6 +68,19 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
       supabase.removeChannel(channel)
     }
   }, [queryClient])
+
+  useEffect(() => {
+    if (!user || !data) return
+    const checkVotes = async () => {
+      const voted = new Set<string>()
+      for (const contestant of data) {
+        const hasVoted = await checkUserVoted(user.id, contestant.id)
+        if (hasVoted) voted.add(contestant.id)
+      }
+      setVotedContestantIds(voted)
+    }
+    checkVotes()
+  }, [user, data])
 
 
   if (isPending) {
@@ -91,57 +109,67 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
         <>
           {data
             ?.filter((c) => category === "All" || c.position === category)
-            .map((contestant) => (
-              <Card key={contestant.id} className="">
-                <CardContent className="flex flex-col gap-6">
-                  <div className="h-90">
-                    <img
-                      src={contestant.avatarUrl}
-                      alt={contestant.name + " avatar"}
-                      className="h-full w-full rounded-2xl bg-center object-cover object-center"
-                    />
-                  </div>
-                  <CardHeader className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center w-full justify-between ">
-                      <div className="gap flex flex-col">
-                        <CardTitle className="text-xl truncate max-w-60">{contestant.name}</CardTitle>
-                        <CardDescription>{contestant.department}</CardDescription>
+            .map((contestant) => {
+              const hasVoted = votedContestantIds.has(contestant.id)
+              const isOwnProfile = user?.id === contestant.user_id
+              
+              return (
+                <Card key={contestant.id} className="">
+                  <CardContent className="flex flex-col gap-6">
+                    <div className="h-90">
+                      <img
+                        src={contestant.avatarUrl}
+                        alt={contestant.name + " avatar"}
+                        className="h-full w-full rounded-2xl bg-center object-cover object-center"
+                      />
+                    </div>
+                    <CardHeader className="flex flex-col gap-2">
+                      <div className="flex flex-wrap items-center w-full justify-between ">
+                        <div className="gap flex flex-col">
+                          <CardTitle className="text-xl truncate max-w-60">{contestant.name}</CardTitle>
+                          <CardDescription>{contestant.department}</CardDescription>
+                        </div>
+                        <CardAction>
+                          <Badge variant={"secondary"}>{contestant.position}</Badge>
+                        </CardAction>
                       </div>
-                      <CardAction>
-                        <Badge variant={"secondary"}>{contestant.position}</Badge>
-                      </CardAction>
+                      <CardDescription className="text-sm">{contestant.bio ?? ""}</CardDescription>
+                    </CardHeader>
+                    <div className="flex flex-col gap-4 justify-between justify-self-end mb-auto px-4">
+
+                      <div className="flex text-lg">
+                        <h1 className="text-3xl text-primary font-semibold">
+                          {contestant.votes_count ?? 0}{' '}
+                          <span className="text-muted-foreground text-base font-normal">
+                            {(contestant.votes_count > 1 || contestant.votes_count === 0) ? "Votes" : "Vote"}
+                          </span>
+                        </h1>
+                      </div>
+
+                      <div className="flex gap-2">
+                        {isOwnProfile && (
+                          <EditBioDialog contestant={contestant} onUpdate={updateBioMutation.mutateAsync} />
+                        )}
+                        <Button
+                          className={"flex-1 h-12 text-lg"}
+                          size={"lg"}
+                          disabled={hasVoted}
+                          onClick={() => {
+                            if (!isAuthenticated) {
+                              setShowAuthDialog(true)
+                            } else {
+                              handleVote(contestant)
+                            }
+                          }}
+                        >
+                          {hasVoted ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
+                        </Button>
+                      </div>
                     </div>
-                    <CardDescription className="text-sm">{contestant.bio ?? ""}</CardDescription>
-                  </CardHeader>
-                  <div className="flex flex-col gap-4 justify-between justify-self-end mb-auto px-4">
-
-                    <div className="flex text-lg">
-                      <h1 className="text-3xl text-primary font-semibold">
-                        {contestant.votes_count ?? 0}{' '}
-                        <span className="text-muted-foreground text-base font-normal">
-                          {(contestant.votes_count > 1 || contestant.votes_count === 0) ? "Votes" : "Vote"}
-                        </span>
-                      </h1>
-                    </div>
-
-
-                    <Button
-                      className={"w-full h-12 text-lg self-end mt-auto"}
-                      size={"lg"}
-                      onClick={() => {
-                        if (!isAuthenticated) {
-                          setShowAuthDialog(true)
-                        } else {
-                          handleVote(contestant)
-                        }
-                      }}
-                    >
-                      Vote for {contestant.name.split(" ")[0]} ⭐
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              )
+            })}
 
           <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
             <DialogContent className="p-8 gap-10 max-w-lg!">
@@ -176,5 +204,46 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
         </>
       )}
     </div>
+  )
+}
+
+function EditBioDialog({ contestant, onUpdate }: { contestant: ContestantWithVotes, onUpdate: any }) {
+  const [open, setOpen] = useState(false)
+  const [bio, setBio] = useState(contestant.bio || "")
+  
+  const handleUpdate = async () => {
+    try {
+      await onUpdate({ contestantId: contestant.id, bio })
+      toast.success("Bio updated")
+      setOpen(false)
+    } catch {
+      toast.error("Failed to update bio")
+    }
+  }
+  
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="icon" className="h-12 w-12 shrink-0">
+          <Pencil className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="p-6 gap-4">
+        <DialogHeader>
+          <DialogTitle>Edit Bio</DialogTitle>
+          <DialogDescription>Update your campaign bio</DialogDescription>
+        </DialogHeader>
+        <Textarea 
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          placeholder="Tell us why people should vote for you..."
+          className="min-h-[120px]"
+        />
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={handleUpdate}>Save</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

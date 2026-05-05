@@ -28,6 +28,7 @@ import { useContestantMutation } from "../hooks"
 import { supabase } from "@/lib/supabase"
 import { Spinner } from "@/components/ui/spinner"
 import { DEPARTMENTS, POSITIONS } from "@/lib/constants"
+import { useAuth } from "@/contexts/auth-provider"
 
 const MAX_FILE_SIZE = 10000000 // 10MB
 const DEBOUNCE_DELAY = 500
@@ -81,6 +82,7 @@ type FormData = z.infer<typeof formSchema>
 export function RegisterForm() {
   const navigate = useNavigate()
   const { mutateAsync, isPending } = useContestantMutation()
+  const { user } = useAuth()
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -185,6 +187,7 @@ export function RegisterForm() {
           avatarUrl: thumbnailUrl,
           bio: data.bio,
         },
+        user?.id,
         {
           onError: (error: any) => {
             if (
