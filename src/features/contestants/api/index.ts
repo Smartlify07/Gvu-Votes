@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase"
+import { slugify } from "@/lib/utils"
 
 export type Category = {
   id: string
@@ -139,6 +140,31 @@ export async function getContestantById(contestantId: string) {
       ...data,
       votes_count: data.votes?.length ?? 0,
       position: data.categories?.label ?? "",
+    }
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export async function getContestantBySlug(slug: string) {
+  try {
+    const result = await supabase
+      .from("contestants")
+      .select("*, votes(*)")
+      .returns<(ContestantWithVotes & { categories?: { label: string } })[]>()
+    if (result.error) {
+      console.error(result.error)
+      throw result.error
+    }
+    const matched = result.data?.find(
+      (c) => slugify(c.name) === slug
+    )
+    if (!matched) return null
+    return {
+      ...matched,
+      votes_count: matched.votes?.length ?? 0,
+      position: matched.categories?.label ?? "",
     }
   } catch (error) {
     console.error(error)
