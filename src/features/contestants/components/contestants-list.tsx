@@ -109,7 +109,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
 
               return (
                 <Card key={contestant.id} className="group relative">
-                  <CardContent className="flex flex-col gap-6">
+                  <CardContent className="flex flex-col gap-6 min-h-full">
                     <div className="h-90">
                       <img
                         src={contestant.avatarUrl}
@@ -145,7 +145,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                         )}
                       </div>
                     </CardHeader>
-                    <div className="flex flex-col gap-4 justify-between justify-self-end mb-auto px-4">
+                    <div className="flex flex-col gap-4 justify-between mt-auto pt-4 px-4">
 
                       <div className="flex text-lg">
                         <h1 className="text-3xl text-primary font-semibold">
