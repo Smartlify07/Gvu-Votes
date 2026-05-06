@@ -3,6 +3,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Navbar } from "@/components/navbar"
 import { useState } from "react"
 import { getContestantById, type ContestantWithVotes, type Vote } from "@/features/contestants/api"
 import { useVoteMutation } from "@/features/contestants/hooks"
@@ -33,7 +34,7 @@ export const Route = createFileRoute("/vote/$id")({
 
     const origin = typeof window !== "undefined"
       ? window.location.origin
-      : "https://gvu-votes.com"
+      : "https://gvu-voting-platform.vercel.app"
 
     const bioSnippet = loaderData.bio
       ? loaderData.bio.slice(0, 150) + (loaderData.bio.length > 150 ? "..." : "")
@@ -117,14 +118,7 @@ function VotePage() {
 
   return (
     <div className="min-h-screen">
-      <div className="border-b bg-background/80 backdrop-blur-md px-6 py-4">
-        <div className="mx-auto max-w-7xl flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Link>
-        </div>
-      </div>
+      <Navbar />
 
       <div className="flex items-center justify-center p-6 pt-24">
         <div className="w-full max-w-2xl">
