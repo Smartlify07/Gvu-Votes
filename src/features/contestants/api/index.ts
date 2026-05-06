@@ -124,17 +124,22 @@ export async function updateContestantBio(contestantId: string, bio: string) {
 
 export async function getContestantById(contestantId: string) {
   try {
-    const { data, error } = await supabase
+    const result = await supabase
       .from("contestants")
-      .select("*")
+      .select("*, votes(*)")
       .eq("id", contestantId)
-      .returns<ContestantWithVotes[]>()
+      .returns<(ContestantWithVotes & { categories?: { label: string } })[]>()
       .single()
-    if (error) {
-      console.error(error)
-      throw error
+    if (result.error) {
+      console.error(result.error)
+      throw result.error
     }
-    return data
+    const data = result.data
+    return {
+      ...data,
+      votes_count: data.votes?.length ?? 0,
+      position: data.categories?.label ?? "",
+    }
   } catch (error) {
     console.error(error)
     throw error
