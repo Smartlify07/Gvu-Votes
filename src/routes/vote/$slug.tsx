@@ -5,19 +5,27 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Navbar } from "@/components/navbar"
 import { useState } from "react"
-import { getContestantById, type Vote } from "@/features/contestants/api"
-import { useCategories, useVoteMutation } from "@/features/contestants/hooks"
+import { getContestantById, getContestantBySlug, type Vote } from "@/features/contestants/api"
+import { useVoteMutation, useCategories } from "@/features/contestants/hooks"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/auth-provider"
 import { ArrowLeft, Share2 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, slugify, isUuid } from "@/lib/utils"
 
-export const Route = createFileRoute("/vote/$id")({
+export const Route = createFileRoute("/vote/$slug")({
   loader: async ({ params }) => {
     try {
-      const contestant = await getContestantById(params.id)
+      let contestant
+      if (isUuid(params.slug)) {
+        contestant = await getContestantById(params.slug)
+      } else {
+        contestant = await getContestantBySlug(params.slug)
+      }
       if (!contestant) return null
-      return contestant
+      if (!isUuid(params.slug)) {
+        return { ...contestant, slug: slugify(contestant.name) }
+      }
+      return { ...contestant, slug: slugify(contestant.name) }
     } catch {
       return null
     }
@@ -48,7 +56,7 @@ export const Route = createFileRoute("/vote/$id")({
         { property: "og:image", content: loaderData.avatarUrl },
         { property: "og:image:width", content: "1200" },
         { property: "og:image:height", content: "630" },
-        { property: "og:url", content: `${origin}/vote/${loaderData.id}` },
+        { property: "og:url", content: `${origin}/vote/${loaderData.slug}` },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: `Vote for ${loaderData.name} | GVU Votes` },
@@ -61,7 +69,7 @@ export const Route = createFileRoute("/vote/$id")({
 })
 
 function VotePage() {
-  const { id } = Route.useParams()
+  const { slug } = Route.useParams()
   const contestant = Route.useLoaderData()
   const { isAuthenticated, user } = useAuth()
   const { data: categories } = useCategories()
@@ -90,7 +98,7 @@ function VotePage() {
   }
 
   const handleShare = () => {
-    const url = `${window.location.origin}/vote/${id}`
+    const url = `${window.location.origin}/vote/${contestant?.slug ?? slug}`
     navigator.clipboard.writeText(url).then(() => {
       toast.success("Vote link copied to clipboard!")
     }).catch(() => {

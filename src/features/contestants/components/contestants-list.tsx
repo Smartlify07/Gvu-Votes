@@ -15,7 +15,7 @@ import { type ContestantWithVotes } from "../api"
 import { toast } from "sonner"
 import { UsersRound, Pencil, Share2 } from "lucide-react"
 import { Link } from "@tanstack/react-router"
-import { cn } from "@/lib/utils"
+import { cn, slugify } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/contexts/auth-provider"
@@ -56,8 +56,9 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
     }
   }
 
-  const handleShare = (contestantId: string) => {
-    const url = `${window.location.origin}/vote/${contestantId}`
+  const handleShare = (contestant: ContestantWithVotes) => {
+    const slug = slugify(contestant.name)
+    const url = `${window.location.origin}/vote/${slug}`
     navigator.clipboard.writeText(url).then(() => {
       toast.success("Vote link copied to clipboard!")
     }).catch(() => {
@@ -126,7 +127,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                         className="h-full w-full rounded-2xl bg-center object-cover object-center"
                       />
                       <button
-                        onClick={() => handleShare(contestant.id)}
+                        onClick={() => handleShare(contestant)}
                         className="absolute top-3 right-3 lg:opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background/80 backdrop-blur-sm p-2 hover:bg-background/90"
                         aria-label="Share vote link"
                       >
