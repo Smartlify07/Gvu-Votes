@@ -212,7 +212,11 @@ export function RegisterForm() {
               error?.message?.includes("unique constraint")
             ) {
               toast.error("You have already registered with this matriculation number or email.")
-            } else {
+            }
+            else if (error?.code === "23514" || error?.message.includes("valid_matric_number_format") || error?.message.includes("violates check constraint")) {
+              toast.error("Failed to register, this matric number isn't valid")
+            }
+            else {
               toast.error("Registration failed. Please try again.")
             }
           },
@@ -364,7 +368,7 @@ export function RegisterForm() {
                     Category <span className="text-destructive">*</span>
                   </FieldLabel>
                   <FieldContent className="">
-                    <Select name={field.name} onValueChange={field.onChange} value={field.value}>
+                    <Select name={field.name} onValueChange={field.onChange} value={field.value} disabled>
                       <SelectTrigger
                         aria-invalid={fieldState.invalid}
                         className="w-full"
