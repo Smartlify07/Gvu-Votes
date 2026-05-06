@@ -127,7 +127,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                       />
                       <button
                         onClick={() => handleShare(contestant.id)}
-                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background/80 backdrop-blur-sm p-2 hover:bg-background/90"
+                        className="absolute top-3 right-3 lg:opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background/80 backdrop-blur-sm p-2 hover:bg-background/90"
                         aria-label="Share vote link"
                       >
                         <Share2 className="h-4 w-4" />
