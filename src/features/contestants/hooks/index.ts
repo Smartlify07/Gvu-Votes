@@ -3,6 +3,7 @@ import {
   addContestant,
   getContestantVotes,
   getContestants,
+  getContestantById,
   getCategories,
   submitVote,
   updateContestantBio,
@@ -23,6 +24,14 @@ export function useContestants() {
     queryFn: () => getContestants(),
   })
   return query
+}
+
+export function useContestantById(contestantId: string) {
+  return useQuery({
+    queryKey: [...CONTESTANTS_QUERY_KEY, contestantId],
+    queryFn: () => getContestantById(contestantId),
+    enabled: !!contestantId,
+  })
 }
 
 export function useCategories() {

@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useEffect, useState } from "react"
 import { type ContestantWithVotes } from "../api"
 import { toast } from "sonner"
-import { UsersRound, Pencil } from "lucide-react"
+import { UsersRound, Pencil, Share2 } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import { cn } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
@@ -54,6 +54,15 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
     } catch (error: unknown) {
       console.error(error)
     }
+  }
+
+  const handleShare = (contestantId: string) => {
+    const url = `${window.location.origin}/vote/${contestantId}`
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success("Vote link copied to clipboard!")
+    }).catch(() => {
+      toast.error("Failed to copy link")
+    })
   }
 
 
@@ -110,12 +119,19 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
               return (
                 <Card key={contestant.id} className="group relative">
                   <CardContent className="flex flex-col gap-6 min-h-full">
-                    <div className="h-90">
+                    <div className="relative h-90">
                       <img
                         src={contestant.avatarUrl}
                         alt={contestant.name + " avatar"}
                         className="h-full w-full rounded-2xl bg-center object-cover object-center"
                       />
+                      <button
+                        onClick={() => handleShare(contestant.id)}
+                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background/80 backdrop-blur-sm p-2 hover:bg-background/90"
+                        aria-label="Share vote link"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </button>
                     </div>
                     <CardHeader className="flex flex-col gap-2">
                       <div className="flex flex-wrap justify-between items-center w-full">
