@@ -5,7 +5,7 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Navbar } from "@/components/navbar"
 import { useState } from "react"
-import { getContestantById, type ContestantWithVotes, type Vote } from "@/features/contestants/api"
+import { getContestantById, type Vote } from "@/features/contestants/api"
 import { useVoteMutation } from "@/features/contestants/hooks"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/auth-provider"
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/vote/$id")({
     try {
       const contestant = await getContestantById(params.id)
       if (!contestant) return null
-      return contestant as ContestantWithVotes & { categories?: { label: string } }
+      return contestant
     } catch {
       return null
     }
@@ -63,6 +63,7 @@ export const Route = createFileRoute("/vote/$id")({
 function VotePage() {
   const { id } = Route.useParams()
   const contestant = Route.useLoaderData()
+  console.log(contestant)
   const { isAuthenticated, user } = useAuth()
   const voteMutation = useVoteMutation()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
@@ -112,7 +113,7 @@ function VotePage() {
     )
   }
 
-  const hasVoted = (contestant as ContestantWithVotes).votes?.some(
+  const hasVoted = contestant.votes?.some(
     (v: Vote) => v.voter_id === user?.id
   )
 
@@ -126,8 +127,8 @@ function VotePage() {
             <CardContent className="flex flex-col gap-6 p-6">
               <div className="relative h-96">
                 <img
-                  src={(contestant as ContestantWithVotes).avatarUrl}
-                  alt={(contestant as ContestantWithVotes).name + " avatar"}
+                  src={contestant.avatarUrl}
+                  alt={contestant.name + " avatar"}
                   className="h-full w-full rounded-2xl bg-center object-cover object-center"
                 />
                 <button
@@ -142,26 +143,26 @@ function VotePage() {
               <CardHeader className="flex flex-col gap-2">
                 <div className="flex flex-wrap justify-between items-center w-full">
                   <div className="gap flex flex-col">
-                    <CardTitle className="text-2xl font-bold">{(contestant as ContestantWithVotes).name}</CardTitle>
-                    <CardDescription>{(contestant as ContestantWithVotes).department}</CardDescription>
+                    <CardTitle className="text-2xl font-bold">{contestant.name}</CardTitle>
+                    <CardDescription>{contestant.department}</CardDescription>
                   </div>
                   <CardAction>
-                    <Badge variant="secondary">{(contestant as ContestantWithVotes).position}</Badge>
+                    <Badge variant="secondary">{contestant.position}</Badge>
                   </CardAction>
                 </div>
-                {(contestant as ContestantWithVotes).bio && (
+                {contestant.bio && (
                   <CardDescription className="text-sm mt-2">
-                    {(contestant as ContestantWithVotes).bio}
+                    {contestant.bio}
                   </CardDescription>
                 )}
               </CardHeader>
 
-              <div className="flex flex-col gap-4 justify-between mt-auto pt-4 border px-4 py-4">
+              <div className="flex flex-col gap-4 justify-between mt-auto pt-4 px-4 py-4">
                 <div className="flex text-lg">
                   <h1 className="text-4xl text-primary font-semibold">
-                    {(contestant as ContestantWithVotes).votes_count ?? 0}{' '}
+                    {contestant.votes_count ?? 0}{' '}
                     <span className="text-muted-foreground text-base font-normal">
-                      {((contestant as ContestantWithVotes).votes_count > 1 || (contestant as ContestantWithVotes).votes_count === 0) ? "Votes" : "Vote"}
+                      {(contestant.votes_count > 1 || contestant.votes_count === 0) ? "Votes" : "Vote"}
                     </span>
                   </h1>
                 </div>
@@ -178,7 +179,7 @@ function VotePage() {
                     }
                   }}
                 >
-                  {hasVoted ? "Voted" : `Vote for ${(contestant as ContestantWithVotes).name.split(" ")[0]} ⭐`}
+                  {hasVoted ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
                 </Button>
               </div>
             </CardContent>
