@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Navbar } from "@/components/navbar"
 import { useState } from "react"
 import { getContestantById, type Vote } from "@/features/contestants/api"
-import { useVoteMutation } from "@/features/contestants/hooks"
+import { useCategories, useVoteMutation } from "@/features/contestants/hooks"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/auth-provider"
 import { ArrowLeft, Share2 } from "lucide-react"
@@ -63,8 +63,8 @@ export const Route = createFileRoute("/vote/$id")({
 function VotePage() {
   const { id } = Route.useParams()
   const contestant = Route.useLoaderData()
-  console.log(contestant)
   const { isAuthenticated, user } = useAuth()
+  const { data: categories } = useCategories()
   const voteMutation = useVoteMutation()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
 
@@ -116,6 +116,7 @@ function VotePage() {
   const hasVoted = contestant.votes?.some(
     (v: Vote) => v.voter_id === user?.id
   )
+  const category = categories?.find((c) => c.id === contestant.category_id)?.label
 
   return (
     <div className="min-h-screen">
@@ -147,7 +148,7 @@ function VotePage() {
                     <CardDescription>{contestant.department}</CardDescription>
                   </div>
                   <CardAction>
-                    <Badge variant="secondary">{contestant.position}</Badge>
+                    <Badge variant="secondary">{category}</Badge>
                   </CardAction>
                 </div>
                 {contestant.bio && (
