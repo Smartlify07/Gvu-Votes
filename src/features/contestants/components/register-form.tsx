@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/field"
 import { toast } from "sonner"
 import { useNavigate } from "@tanstack/react-router"
-import { CheckCircle2, Loader2, Upload, User, Award, ImageIcon } from "lucide-react"
+import { Loader2, Upload, User, Award, ImageIcon } from "lucide-react"
 import { useContestantMutation, useCategories } from "../hooks"
 import { supabase, signInWithGoogle } from "@/lib/supabase"
 import { Spinner } from "@/components/ui/spinner"
@@ -39,7 +39,6 @@ import { DEPARTMENTS } from "@/lib/constants"
 import { useAuth } from "@/contexts/auth-provider"
 
 const MAX_FILE_SIZE = 10000000 // 10MB
-const DEBOUNCE_DELAY = 500
 
 const formSchema = z.object({
   name: z
@@ -93,12 +92,9 @@ export function RegisterForm() {
   const { data: categories } = useCategories()
   const { user, isAuthenticated } = useAuth()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
   const [fileValue, setFileValue] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const cleanupRef = useRef<(() => void) | null>(null)
 
   const {
     handleSubmit,
@@ -109,66 +105,15 @@ export function RegisterForm() {
     resolver: zodResolver(formSchema) as any,
   })
 
-
-  useEffect(() => {
-    return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current()
-      }
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl)
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!fileValue) {
-      setUploadedUrl(null)
-      setUploadError(null)
-      return
-    }
-
-    setUploadError(null)
-    setIsUploading(true)
-
-    const timer = setTimeout(async () => {
-      const fileExt = fileValue.name.split(".").pop()
-      const fileName = `${Date.now()}.${fileExt}`
-
-      const { error } = await supabase.storage
-        .from("contestants")
-        .upload(fileName, fileValue)
-
-      if (error) {
-        setUploadError(error.message)
-        setIsUploading(false)
-        return
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from("contestants")
-        .getPublicUrl(fileName)
-
-      setUploadedUrl(publicUrlData.publicUrl)
-      setIsUploading(false)
-    }, DEBOUNCE_DELAY)
-
-    cleanupRef.current = () => clearTimeout(timer)
-
-    return () => {
-      cleanupRef.current?.()
-    }
-  }, [fileValue])
-
   const onSubmit = async (data: FormData) => {
     if (!isAuthenticated) {
       setShowAuthDialog(true)
       return
     }
 
-    let thumbnailUrl = uploadedUrl || (data.thumbnail instanceof File ? "" : data.thumbnail || "")
+    let thumbnailUrl = ""
 
-    if (data.thumbnail instanceof File && !uploadedUrl) {
+    if (data.thumbnail instanceof File) {
       setIsUploading(true)
       const file = data.thumbnail
       const fileExt = file.name.split(".").pop()
@@ -178,9 +123,8 @@ export function RegisterForm() {
         .from("contestants")
         .upload(fileName, file)
 
-      setIsUploading(false)
-
       if (uploadError) {
+        setIsUploading(false)
         toast.error("Failed to upload image")
         return
       }
@@ -190,6 +134,7 @@ export function RegisterForm() {
         .getPublicUrl(uploadData.path)
 
       thumbnailUrl = publicUrlData.publicUrl
+      setIsUploading(false)
     }
 
     try {
@@ -463,12 +408,6 @@ export function RegisterForm() {
                     alt="Preview"
                     className="h-full w-full object-contain rounded-lg"
                   />
-                ) : uploadedUrl ? (
-                  <>
-                    <CheckCircle2 className="h-10 w-10 text-green-600" />
-                    <p className="text-sm text-green-600">Uploaded</p>
-                    <p className="text-xs text-muted-foreground">{fileValue?.name}</p>
-                  </>
                 ) : (
                   <>
                     <Upload className="h-10 w-10 text-muted-foreground" />
@@ -481,11 +420,6 @@ export function RegisterForm() {
                   </>
                 )}
               </div>
-              {uploadError && (
-                <FieldDescription className="text-destructive mt-2">
-                  {uploadError}
-                </FieldDescription>
-              )}
               {fieldState.invalid && (
                 <FieldError errors={[fieldState.error]} />
               )}
@@ -497,10 +431,10 @@ export function RegisterForm() {
 
       {/* Submit Button */}
       <Button type="submit" className="w-full" disabled={isPending || isUploading}>
-        {isPending ? (
+        {isPending || isUploading ? (
           <>
             <Spinner />
-            Registering...
+            {isUploading ? "Uploading image..." : "Registering..."}
           </>
         ) : (
           "Register"
