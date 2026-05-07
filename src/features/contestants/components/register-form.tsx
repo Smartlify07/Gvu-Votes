@@ -368,7 +368,7 @@ export function RegisterForm() {
                     Category <span className="text-destructive">*</span>
                   </FieldLabel>
                   <FieldContent className="">
-                    <Select name={field.name} onValueChange={field.onChange} value={field.value}>
+                    <Select name={field.name} onValueChange={field.onChange} value={field.value} disabled>
                       <SelectTrigger
                         aria-invalid={fieldState.invalid}
                         className="w-full"
