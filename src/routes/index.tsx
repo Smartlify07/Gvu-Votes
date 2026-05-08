@@ -7,6 +7,7 @@ import { Trophy, Users, Vote, ArrowRight, Crown, Sparkles } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Navbar } from "@/components/navbar"
+import { useHasVotingEnded } from "@/hooks/use-has-voting-ended"
 
 export const Route = createFileRoute("/")({ component: App })
 
@@ -14,10 +15,10 @@ function App() {
   const { data: contestantsData, isPending } = useContestants()
   const { data: categories } = useCategories()
   const [selectedCategory, setSelectedCategory] = useState("All")
+  const votingEnded = useHasVotingEnded()
 
   const totalContestants = contestantsData?.length ?? 0
   const { data: totalVotes, isPending: isTotalVotesPending } = useTotalVotes()
-  console.log(totalVotes)
   const totalPositions = categories?.length ?? 0
 
   const scrollToContestants = () => {
@@ -51,10 +52,17 @@ function App() {
           </p>
 
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Link className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")} to="/register">
-              Register as Contestant
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+            {votingEnded ? (
+              <span className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base opacity-50 cursor-not-allowed")}>
+                Registration Closed
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </span>
+            ) : (
+              <Link className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")} to="/register">
+                Register as Contestant
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            )}
             <Button size="lg" variant="outline" onClick={scrollToContestants}>
               Cast Your Vote
             </Button>

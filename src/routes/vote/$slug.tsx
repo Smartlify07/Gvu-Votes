@@ -11,6 +11,7 @@ import { toast } from "sonner"
 import { useAuth } from "@/contexts/auth-provider"
 import { ArrowLeft, Share2 } from "lucide-react"
 import { cn, slugify, isUuid } from "@/lib/utils"
+import { useHasVotingEnded } from "@/hooks/use-has-voting-ended"
 
 export const Route = createFileRoute("/vote/$slug")({
   loader: async ({ params }) => {
@@ -71,11 +72,11 @@ export const Route = createFileRoute("/vote/$slug")({
 function VotePage() {
   const { slug } = Route.useParams()
   const contestant = Route.useLoaderData()
-  console.log(contestant)
   const { isAuthenticated, user } = useAuth()
   const { data: categories } = useCategories()
   const voteMutation = useVoteMutation()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
+  const votingEnded = useHasVotingEnded()
 
   const handleVote = async () => {
     if (!user || !contestant) return
@@ -178,7 +179,7 @@ function VotePage() {
                 <Button
                   className="w-full h-12 text-lg truncate"
                   size="lg"
-                  disabled={hasVoted}
+                  disabled={hasVoted || votingEnded}
                   onClick={() => {
                     if (!isAuthenticated) {
                       setShowAuthDialog(true)
@@ -187,7 +188,7 @@ function VotePage() {
                     }
                   }}
                 >
-                  {hasVoted ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
+                  {votingEnded ? "Voting Closed" : hasVoted ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
                 </Button>
               </div>
             </CardContent>

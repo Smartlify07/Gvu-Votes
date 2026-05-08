@@ -8,10 +8,12 @@ import { Menu, X } from "lucide-react"
 import { signOut, signInWithGoogle } from "@/lib/supabase"
 import { toast } from "sonner"
 import Logo from "../../public/logo.jpg"
+import { useHasVotingEnded } from "@/hooks/use-has-voting-ended"
 
 export function Navbar({ className }: { className?: string }) {
   const { user, isAuthenticated } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
+  const votingEnded = useHasVotingEnded()
 
   const handleSignOut = async () => {
     try {
@@ -43,9 +45,15 @@ export function Navbar({ className }: { className?: string }) {
         <Link to="/leaderboard" className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}>
           Leaderboard
         </Link>
-        <Link to="/register" className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")}>
-          Become a contestant
-        </Link>
+        {votingEnded ? (
+          <span className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base opacity-50 cursor-not-allowed")}>
+            Registration Closed
+          </span>
+        ) : (
+          <Link to="/register" className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")}>
+            Become a contestant
+          </Link>
+        )}
       </div>
 
       <div className="hidden md:flex items-center justify-end">
@@ -79,9 +87,15 @@ export function Navbar({ className }: { className?: string }) {
           <Link to="/leaderboard" className={cn(buttonVariants({ variant: "ghost", size: "lg" }))} onClick={() => setIsOpen(false)}>
             Leaderboard
           </Link>
-          <Link to="/register" className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")} onClick={() => setIsOpen(false)}>
-            Become a contestant
-          </Link>
+          {votingEnded ? (
+            <span className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base opacity-50 cursor-not-allowed")}>
+              Registration Closed
+            </span>
+          ) : (
+            <Link to="/register" className={cn(buttonVariants({ variant: "default", size: "lg" }), "text-base")} onClick={() => setIsOpen(false)}>
+              Become a contestant
+            </Link>
+          )}
           <div className="flex items-center gap-4 border-t pt-4">
             {isAuthenticated && user ? (
               <>

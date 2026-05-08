@@ -19,4 +19,8 @@ const CATEGORIES = [
 
 const VOTING_END_TIME = new Date("2026-05-08T12:00:00")
 
-export { DEPARTMENTS, CATEGORIES, VOTING_END_TIME }
+function hasVotingEnded(): boolean {
+  return Date.now() >= VOTING_END_TIME.getTime()
+}
+
+export { DEPARTMENTS, CATEGORIES, VOTING_END_TIME, hasVotingEnded }
