@@ -39,20 +39,19 @@ export type ContestantWithVotes = {
   bio: string
   user_id: string
   votes_count: number;
-  votes: Vote[]
+  category_label: string;
+  has_voted: boolean;
 }
 
 export async function getContestants() {
   try {
-    const result = await supabase
-      .from("contestants")
-      .select("*, votes(*), categories(label)")
-      .returns<(ContestantWithVotes & { categories: { label: string } })[]>()
-    const data = result.data?.map(c => ({
-      ...c,
-      votes_count: c.votes.length,
-      position: c.categories?.label || ""
-    }))
+    const { error, data } = await supabase
+      .from("contestants_with_vote_counts")
+      .select("*").returns<ContestantWithVotes[]>()
+    if (error) {
+      console.error(error)
+      throw error
+    }
     return data ?? []
   } catch (error) {
     console.error(error)
@@ -60,6 +59,26 @@ export async function getContestants() {
   }
 }
 
+export async function getTotalVotes() {
+  try {
+
+    const { data, error } = await supabase
+      .from('contestants_with_vote_counts')
+      .select('votes_count')
+    if (error) {
+      throw error
+
+    }
+    const total = (data ?? []).reduce((sum, r) => sum + (r.votes_count ?? 0), 0);
+    return total
+  }
+
+  catch (error) {
+    console.error(error)
+    throw error
+  }
+
+}
 export async function addContestant(values: ContestantPayload,) {
   try {
     const { data, error } = await supabase.from("contestants").insert({
@@ -78,7 +97,7 @@ export async function addContestant(values: ContestantPayload,) {
 
 export async function submitVote(values: VotePayload) {
   try {
-    const { data, error } = await supabase.from("votes").insert({
+    const { data, error } = await supabase.from("votes").upsert({
       contestant_id: values.contestant_id,
       voter_id: values.voter_id,
     })
@@ -126,21 +145,17 @@ export async function updateContestantBio(contestantId: string, bio: string) {
 export async function getContestantById(contestantId: string) {
   try {
     const result = await supabase
-      .from("contestants")
-      .select("*, votes(*)")
+      .from("contestants_with_vote_counts")
+      .select("*")
       .eq("id", contestantId)
-      .returns<(ContestantWithVotes & { categories?: { label: string } })[]>()
+      .returns<(ContestantWithVotes)[]>()
       .single()
     if (result.error) {
       console.error(result.error)
       throw result.error
     }
     const data = result.data
-    return {
-      ...data,
-      votes_count: data.votes?.length ?? 0,
-      position: data.categories?.label ?? "",
-    }
+    return data
   } catch (error) {
     console.error(error)
     throw error
@@ -150,9 +165,9 @@ export async function getContestantById(contestantId: string) {
 export async function getContestantBySlug(slug: string) {
   try {
     const result = await supabase
-      .from("contestants")
-      .select("*, votes(*)")
-      .returns<(ContestantWithVotes & { categories?: { label: string } })[]>()
+      .from("contestants_with_vote_counts")
+      .select("*")
+      .returns<(ContestantWithVotes)[]>()
     if (result.error) {
       console.error(result.error)
       throw result.error
@@ -161,11 +176,7 @@ export async function getContestantBySlug(slug: string) {
       (c) => slugify(c.name) === slug
     )
     if (!matched) return null
-    return {
-      ...matched,
-      votes_count: matched.votes?.length ?? 0,
-      position: matched.categories?.label ?? "",
-    }
+    return matched
   } catch (error) {
     console.error(error)
     throw error

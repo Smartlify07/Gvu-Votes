@@ -71,6 +71,7 @@ export const Route = createFileRoute("/vote/$slug")({
 function VotePage() {
   const { slug } = Route.useParams()
   const contestant = Route.useLoaderData()
+  console.log(contestant)
   const { isAuthenticated, user } = useAuth()
   const { data: categories } = useCategories()
   const voteMutation = useVoteMutation()
@@ -121,10 +122,8 @@ function VotePage() {
     )
   }
 
-  const hasVoted = contestant.votes?.some(
-    (v: Vote) => v.voter_id === user?.id
-  )
-  const category = categories?.find((c) => c.id === contestant.category_id)?.label
+  const hasVoted = contestant.has_voted
+  const category = contestant.category_label
 
   return (
     <div className="min-h-screen">

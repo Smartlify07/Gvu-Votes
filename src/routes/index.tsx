@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ContestantsList } from "@/features/contestants/components/contestants-list"
-import { useCategories, useContestants } from "@/features/contestants/hooks"
+import { useCategories, useContestants, useTotalVotes } from "@/features/contestants/hooks"
 import { Trophy, Users, Vote, ArrowRight, Crown, Sparkles } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
@@ -16,11 +16,9 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState("All")
 
   const totalContestants = contestantsData?.length ?? 0
-  const totalVotes = contestantsData?.reduce(
-    (sum, c) => sum + (c.votes_count ?? 0),
-    0
-  ) ?? 0
-  const totalPositions = new Set(contestantsData?.map((c) => c.position) ?? []).size
+  const { data: totalVotes, isPending: isTotalVotesPending } = useTotalVotes()
+  console.log(totalVotes)
+  const totalPositions = categories?.length ?? 0
 
   const scrollToContestants = () => {
     document.getElementById("contestants")?.scrollIntoView({ behavior: "smooth" })
@@ -75,7 +73,7 @@ function App() {
 
           <div className="flex flex-col items-center gap-2 text-center">
             <Vote className="h-8 w-8 text-yellow-500" />
-            <div className="text-3xl font-bold">{totalVotes.toLocaleString()}</div>
+            <div className="text-3xl font-bold">{isTotalVotesPending ? 0 : totalVotes?.toLocaleString()}</div>
             <div className="text-sm text-muted-foreground">Total Votes</div>
           </div>
 

@@ -47,7 +47,7 @@ function LeaderboardItem({ contestant, rank, maxVotes }: LeaderboardItemProps) {
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{contestant.name}</p>
         <p className="truncate text-sm text-muted-foreground">
-          {contestant.position} • {contestant.department}
+          {contestant.category_label} • {contestant.department}
         </p>
       </div>
 
