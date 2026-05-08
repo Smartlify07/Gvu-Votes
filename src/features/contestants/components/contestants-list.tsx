@@ -27,7 +27,6 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
   const voteMutation = useVoteMutation()
   const { isAuthenticated, user } = useAuth()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
-  const queryClient = useQueryClient()
   const { data: categories } = useCategories()
   const actualCategory = category === "All" ? "All" : categories?.find((category_) => category_.id === category)?.label
 
