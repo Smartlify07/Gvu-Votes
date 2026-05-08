@@ -1,3 +1,9 @@
 {
-    "redirects": []
+    "redirects": [
+        {
+            "permanent": true,
+            "source": "/maintenance",
+            "destination": "/"
+        }
+    ]
 }
