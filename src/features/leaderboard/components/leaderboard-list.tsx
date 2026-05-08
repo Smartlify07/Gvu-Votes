@@ -1,3 +1,4 @@
+import { OptimizedImage } from "@/components/ui/optimized-image"
 import { type ContestantWithVotes } from "@/features/contestants/api"
 import { Trophy } from "lucide-react"
 import { Link } from "@tanstack/react-router"
@@ -35,13 +36,12 @@ function LeaderboardItem({ contestant, rank, maxVotes }: LeaderboardItemProps) {
       </div>
 
       {/* Avatar */}
-      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full">
-        <img
-          src={contestant.avatarUrl}
-          alt={contestant.name}
-          className="h-full w-full object-cover"
-        />
-      </div>
+      <OptimizedImage
+        src={contestant.avatarUrl}
+        alt={contestant.name}
+        className="h-full w-full object-cover"
+        containerClassName="h-12 w-12 shrink-0 rounded-full"
+      />
 
       {/* Info */}
       <div className="min-w-0 flex-1">

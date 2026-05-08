@@ -1,3 +1,4 @@
+import { OptimizedImage } from "@/components/ui/optimized-image"
 import { type ContestantWithVotes } from "@/features/contestants/api"
 
 export type PodiumItemProps = {
@@ -29,13 +30,12 @@ function PodiumItem({ contestant, rank }: PodiumItemProps) {
   return (
     <div className="flex flex-col items-center gap-2 md:gap-3">
       {/* Avatar */}
-      <div className={`${avatarClass} rounded-full overflow-hidden`}>
-        <img
-          src={contestant.avatarUrl}
-          alt={contestant.name}
-          className="h-full w-full object-cover"
-        />
-      </div>
+      <OptimizedImage
+        src={contestant.avatarUrl}
+        alt={contestant.name}
+        className="h-full w-full object-cover"
+        containerClassName={`${avatarClass} rounded-full`}
+      />
 
       {/* Name */}
       <div className="text-center max-w-[100px] md:max-w-[120px]">
