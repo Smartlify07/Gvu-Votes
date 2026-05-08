@@ -8,16 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { CONTESTANTS_QUERY_KEY, useCategories, useContestants, useVoteMutation } from "../hooks"
+import { useCategories, useContestants, useVoteMutation } from "../hooks"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { type ContestantWithVotes } from "../api"
 import { toast } from "sonner"
 import { UsersRound, Pencil, Share2 } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import { cn, slugify } from "@/lib/utils"
-import { supabase } from "@/lib/supabase"
-import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/contexts/auth-provider"
 
 export type ContestantsListProps = {
@@ -65,27 +63,6 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
       toast.error("Failed to copy link")
     })
   }
-
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("votes-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "votes",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: CONTESTANTS_QUERY_KEY })
-        }
-      )
-      .subscribe()
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [queryClient])
 
 
   if (isPending) {
