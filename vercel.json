@@ -1,14 +1,3 @@
 {
-    "redirects": [
-        {
-            "source": "/",
-            "destination": "/maintenance",
-            "permanent": false
-        },
-        {
-            "source": "/leaderboard",
-            "destination": "/maintenance",
-            "permanent": false
-        }
-    ]
+    "redirects": []
 }
