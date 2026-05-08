@@ -1,0 +1,14 @@
+{
+    "redirects": [
+        {
+            "source": "/",
+            "destination": "/maintenance",
+            "temporary": true
+        },
+        {
+            "source": "/leaderboard",
+            "destination": "/maintenance",
+            "temporary": true
+        }
+    ]
+}

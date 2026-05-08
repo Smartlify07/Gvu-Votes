@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VoteSlugRouteImport } from './routes/vote/$slug'
@@ -18,6 +19,11 @@ import { Route as ContestantsIdEditRouteImport } from './routes/contestants/$id/
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaintenanceRoute = MaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeaderboardRoute = LeaderboardRouteImport.update({
@@ -44,6 +50,7 @@ const ContestantsIdEditRoute = ContestantsIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/maintenance': typeof MaintenanceRoute
   '/register': typeof RegisterRoute
   '/vote/$slug': typeof VoteSlugRoute
   '/contestants/$id/edit': typeof ContestantsIdEditRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/maintenance': typeof MaintenanceRoute
   '/register': typeof RegisterRoute
   '/vote/$slug': typeof VoteSlugRoute
   '/contestants/$id/edit': typeof ContestantsIdEditRoute
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/maintenance': typeof MaintenanceRoute
   '/register': typeof RegisterRoute
   '/vote/$slug': typeof VoteSlugRoute
   '/contestants/$id/edit': typeof ContestantsIdEditRoute
@@ -68,6 +77,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/leaderboard'
+    | '/maintenance'
     | '/register'
     | '/vote/$slug'
     | '/contestants/$id/edit'
@@ -75,6 +85,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/leaderboard'
+    | '/maintenance'
     | '/register'
     | '/vote/$slug'
     | '/contestants/$id/edit'
@@ -82,6 +93,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/leaderboard'
+    | '/maintenance'
     | '/register'
     | '/vote/$slug'
     | '/contestants/$id/edit'
@@ -90,6 +102,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LeaderboardRoute: typeof LeaderboardRoute
+  MaintenanceRoute: typeof MaintenanceRoute
   RegisterRoute: typeof RegisterRoute
   VoteSlugRoute: typeof VoteSlugRoute
   ContestantsIdEditRoute: typeof ContestantsIdEditRoute
@@ -102,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maintenance': {
+      id: '/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof MaintenanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leaderboard': {
@@ -138,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LeaderboardRoute: LeaderboardRoute,
+  MaintenanceRoute: MaintenanceRoute,
   RegisterRoute: RegisterRoute,
   VoteSlugRoute: VoteSlugRoute,
   ContestantsIdEditRoute: ContestantsIdEditRoute,
