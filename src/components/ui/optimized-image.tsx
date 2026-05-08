@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 type OptimizedImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   containerClassName?: string
   fallback?: React.ReactNode
+  blur?: boolean
 }
 
 export function OptimizedImage({
@@ -12,6 +13,7 @@ export function OptimizedImage({
   className,
   containerClassName,
   fallback,
+  blur = true,
   ...props
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -30,8 +32,12 @@ export function OptimizedImage({
           alt={alt}
           className={cn(
             className,
-            "transition-opacity duration-500",
-            isLoaded ? "opacity-100" : "opacity-0"
+            "transition-all duration-700",
+            isLoaded
+              ? "opacity-100 blur-0 scale-100"
+              : blur
+                ? "opacity-90 blur-xl scale-105"
+                : "opacity-0"
           )}
           onLoad={() => setIsLoaded(true)}
           onError={() => setHasError(true)}
