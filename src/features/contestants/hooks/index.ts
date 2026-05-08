@@ -10,6 +10,7 @@ import {
   checkUserVoted,
   type ContestantPayload,
   type VotePayload,
+  getTotalVotes,
 } from "../api"
 
 export const CONTESTANTS_QUERY_KEY = ["contestants"]
@@ -22,6 +23,7 @@ export function useContestants() {
   const query = useQuery({
     queryKey: CONTESTANTS_QUERY_KEY,
     queryFn: () => getContestants(),
+    refetchOnWindowFocus: false,
   })
   return query
 }
@@ -31,6 +33,7 @@ export function useContestantById(contestantId: string) {
     queryKey: [...CONTESTANTS_QUERY_KEY, contestantId],
     queryFn: () => getContestantById(contestantId),
     enabled: !!contestantId,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -41,6 +44,15 @@ export function useCategories() {
     refetchOnWindowFocus: false,
   })
   return query
+}
+
+export function useTotalVotes() {
+  return useQuery({
+    queryKey: [VOTES_QUERY_KEY],
+    queryFn: () => getTotalVotes(),
+    refetchOnWindowFocus: false,
+  })
+
 }
 
 export function useContestantMutation() {
@@ -57,13 +69,7 @@ export function useContestantMutation() {
   })
 }
 
-export function useContestantVotes(contestantId: string) {
-  return useQuery({
-    queryKey: [...CONTESTANTS_QUERY_KEY, VOTES_QUERY_KEY, contestantId],
-    queryFn: () => getContestantVotes(contestantId),
-    enabled: !!contestantId,
-  })
-}
+
 
 export function useVoteMutation() {
   const queryClient = useQueryClient()

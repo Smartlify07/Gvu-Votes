@@ -117,7 +117,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                           <CardDescription>{contestant.department}</CardDescription>
                         </div>
                         <CardAction>
-                          <Badge variant={"secondary"}>{contestant.position}</Badge>
+                          <Badge variant={"secondary"}>{contestant.category_label}</Badge>
                         </CardAction>
                       </div>
                       <div className="flex items-center w-full justify-between">
@@ -152,7 +152,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                       <Button
                         className={"w-full h-12 text-lg self-end mt-auto truncate"}
                         size={"lg"}
-                        disabled={contestant.votes?.some(v => v.voter_id === user?.id)}
+                        disabled={contestant.has_voted}
                         onClick={() => {
                           if (!isAuthenticated) {
                             setShowAuthDialog(true)
@@ -161,7 +161,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                           }
                         }}
                       >
-                        {contestant.votes?.some(v => v.voter_id === user?.id) ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
+                        {contestant.has_voted ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
                       </Button>
                     </div>
                   </CardContent>
