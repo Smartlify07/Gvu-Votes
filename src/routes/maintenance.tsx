@@ -5,8 +5,8 @@ export const Route = createFileRoute('/maintenance')({
 })
 
 function RouteComponent() {
-    return <section>
-        <h1 className='text-3xl w-xl'>This site is currently in maintenance mode, we're working really hard to restore services</h1>
+    return <section className='min-h-svh justify-center flex items-center'>
+        <h1 className='text-3xl w-2xl text-center'>This site is currently in maintenance mode, we're working really hard to restore our services</h1>
 
     </section>
 }
