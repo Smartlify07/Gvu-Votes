@@ -1,3 +1,4 @@
+import { OptimizedImage } from "@/components/ui/optimized-image"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -98,10 +99,11 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                 <Card key={contestant.id} className="group relative">
                   <CardContent className="flex flex-col gap-6 min-h-full">
                     <div className="relative h-90">
-                      <img
+                      <OptimizedImage
                         src={contestant.avatarUrl}
                         alt={contestant.name + " avatar"}
                         className="h-full w-full rounded-2xl bg-center object-cover object-center"
+                        containerClassName="size-full"
                       />
                       <button
                         onClick={() => handleShare(contestant)}

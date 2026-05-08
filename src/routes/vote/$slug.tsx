@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Navbar } from "@/components/navbar"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 import { useState } from "react"
 import { getContestantById, getContestantBySlug, type Vote } from "@/features/contestants/api"
 import { useVoteMutation, useCategories } from "@/features/contestants/hooks"
@@ -135,10 +136,11 @@ function VotePage() {
           <Card className="group">
             <CardContent className="flex flex-col gap-6 p-6">
               <div className="relative h-96">
-                <img
+                <OptimizedImage
                   src={contestant.avatarUrl}
                   alt={contestant.name + " avatar"}
                   className="h-full w-full rounded-2xl bg-center object-cover object-center"
+                  containerClassName="size-full"
                 />
                 <button
                   onClick={handleShare}
