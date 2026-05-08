@@ -3,12 +3,12 @@
         {
             "source": "/",
             "destination": "/maintenance",
-            "temporary": true
+            "permanent": false
         },
         {
             "source": "/leaderboard",
             "destination": "/maintenance",
-            "temporary": true
+            "permanent": false
         }
     ]
 }
