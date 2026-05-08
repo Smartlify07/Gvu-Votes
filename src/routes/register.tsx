@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { RegisterForm } from "@/features/contestants/components/register-form"
 import { Navbar } from "@/components/navbar"
 import { VOTING_END_TIME } from "@/lib/constants"
+import { useHasVotingEnded } from "@/hooks/use-has-voting-ended"
 import { useEffect, useState } from "react"
 
 export const Route = createFileRoute("/register")({
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/register")({
 
 function RegisterPage() {
   const [timeLeft, setTimeLeft] = useState("")
+  const votingEnded = useHasVotingEnded()
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -46,14 +48,24 @@ function RegisterPage() {
       <Navbar />
       <div className="flex items-center min-h-screen justify-center p-4 md:p-12 pt-36 md:pt-36">
         <div className="w-full lg:max-w-2xl">
-          <div className="absolute top-24 right-4 md:right-8 lg:right-12 flex items-center gap-2 text-sm md:text-base font-medium text-muted-foreground">
-            <span>Voting ends in:</span>
-            <span className="text-primary font-mono text-lg">{timeLeft}</span>
-          </div>
+          {!votingEnded && (
+            <div className="absolute top-24 right-4 md:right-8 lg:right-12 flex items-center gap-2 text-sm md:text-base font-medium text-muted-foreground">
+              <span>Voting ends in:</span>
+              <span className="text-primary font-mono text-lg">{timeLeft}</span>
+            </div>
+          )}
           <h1 className="mb-6 text-center text-3xl font-medium">
-            Contestant Registration
+            {votingEnded ? "Registration Closed" : "Contestant Registration"}
           </h1>
-          <RegisterForm />
+          {votingEnded ? (
+            <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+              <p className="text-lg text-muted-foreground">
+                Registration for contestants has ended. Thank you for your interest!
+              </p>
+            </div>
+          ) : (
+            <RegisterForm />
+          )}
         </div>
       </div>
     </div>

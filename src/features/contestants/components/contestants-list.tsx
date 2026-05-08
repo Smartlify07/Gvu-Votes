@@ -17,6 +17,7 @@ import { UsersRound, Pencil, Share2 } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import { cn, slugify } from "@/lib/utils"
 import { useAuth } from "@/contexts/auth-provider"
+import { useHasVotingEnded } from "@/hooks/use-has-voting-ended"
 
 export type ContestantsListProps = {
   category?: string
@@ -27,9 +28,9 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
   const voteMutation = useVoteMutation()
   const { isAuthenticated, user } = useAuth()
   const [showAuthDialog, setShowAuthDialog] = useState(false)
+  const votingEnded = useHasVotingEnded()
   const { data: categories } = useCategories()
   const actualCategory = category === "All" ? "All" : categories?.find((category_) => category_.id === category)?.label
-
   const handleVote = async (contestant: ContestantWithVotes) => {
     if (!user) return
 
@@ -123,7 +124,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                       <div className="flex items-center w-full justify-between">
 
                         <CardDescription className="text-sm">{contestant.bio ?? ""}</CardDescription>
-                        {user?.id === contestant.user_id && (
+                        {user?.id === contestant.user_id && !votingEnded && (
                           <Link
                             to="/contestants/$id/edit"
                             params={{ id: contestant.id }}
@@ -152,7 +153,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                       <Button
                         className={"w-full h-12 text-lg self-end mt-auto truncate"}
                         size={"lg"}
-                        disabled={contestant.has_voted}
+                        disabled={contestant.has_voted || votingEnded}
                         onClick={() => {
                           if (!isAuthenticated) {
                             setShowAuthDialog(true)
@@ -161,7 +162,7 @@ export function ContestantsList({ category = "All" }: ContestantsListProps) {
                           }
                         }}
                       >
-                        {contestant.has_voted ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
+                        {votingEnded ? "Voting Closed" : contestant.has_voted ? "Voted" : `Vote for ${contestant.name.split(" ")[0]} ⭐`}
                       </Button>
                     </div>
                   </CardContent>

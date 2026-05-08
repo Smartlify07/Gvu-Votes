@@ -37,6 +37,7 @@ import { supabase, signInWithGoogle } from "@/lib/supabase"
 import { Spinner } from "@/components/ui/spinner"
 import { DEPARTMENTS } from "@/lib/constants"
 import { useAuth } from "@/contexts/auth-provider"
+import { useHasVotingEnded } from "@/hooks/use-has-voting-ended"
 
 const MAX_FILE_SIZE = 10000000 // 10MB
 
@@ -88,6 +89,7 @@ type FormData = z.infer<typeof formSchema>
 
 export function RegisterForm() {
   const navigate = useNavigate()
+  const votingEnded = useHasVotingEnded()
   const { mutateAsync, isPending } = useContestantMutation()
   const { data: categories } = useCategories()
   const { user, isAuthenticated } = useAuth()
@@ -430,7 +432,7 @@ export function RegisterForm() {
       </section>
 
       {/* Submit Button */}
-      <Button type="submit" className="w-full" disabled={isPending || isUploading}>
+      <Button type="submit" className="w-full" disabled={isPending || isUploading || votingEnded}>
         {isPending || isUploading ? (
           <>
             <Spinner />
